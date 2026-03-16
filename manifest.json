@@ -1,0 +1,17 @@
+{
+  "name": "LinkVault",
+  "short_name": "LinkVault",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#F2F2F7",
+  "theme_color": "#F2F2F7",
+  "share_target": {
+    "action": "/index.html",
+    "method": "GET",
+    "params": {
+      "url": "url",
+      "text": "text",
+      "title": "title"
+    }
+  }
+}
