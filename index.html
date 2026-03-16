@@ -326,4 +326,75 @@ function render() {
 
 // ── ACTIONS ───────────────────────────────────────────────────────────────────
 function toggleAdd() { state.adding = !state.adding; render(); }
+function setTab(t) { state.tab = t; state.filter = "all"; render();        }
+        var cat = getCat(link.category);
+        var waUrl = "https://wa.me/?text="+encodeURIComponent(link.url);
+        return '<div class="card">'
+          +'<div id="thumb-'+link.id+'" class="card-thumb-wrap" style="background:'+link.platform.bg+'">'+thumbHtml+'</div>'
+          +'<div class="card-content">'
+            +'<div class="card-meta">'
+              +'<div class="card-dot" style="background:'+link.platform.color+'"></div>'
+              +'<span class="card-platform-name" style="color:'+link.platform.color+'">'+link.platform.name+'</span>'
+              +'<span class="card-cat-badge">'+cat.emoji+' '+cat.name+'</span>'
+            +'</div>'
+            +'<a class="card-url" href="'+esc(link.url)+'" target="_blank" rel="noreferrer">'+esc(getDomain(link.url))+'</a>'
+            +(link.note ? '<div class="card-note">'+esc(link.note)+'</div>' : '')
+            +'<div class="card-time">'+timeAgo(link.date)+'</div>'
+          +'</div>'
+          +'<div class="card-actions">'
+            +'<a class="act-btn wa-btn" href="'+esc(waUrl)+'" target="_blank" rel="noreferrer" title="WhatsApp">'
+              +'<svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>'
+            +'</a>'
+            +'<button class="act-btn" onclick="copyLink(\''+esc(link.url)+'\')" title="Copiar">⎘</button>'
+            +'<button class="act-btn danger" onclick="deleteLink('+link.id+')" title="Eliminar">✕</button>'
+          +'</div>'
+        +'</div>';
+      }).join("");
+
+  var html = '<div class="header">'
+    +'<div><div class="header-sub">Your Vault</div><div class="header-title">Links</div></div>'
+    +'<button class="add-btn'+(adding?" open":"")+'" onclick="toggleAdd()">'+(adding?"✕":"+")+'</button>'
+    +'</div>';
+
+  if (adding) {
+    html += '<div class="add-form">'
+      +'<div class="input-wrap">'
+        +'<span class="input-icon">'+(preview ? preview.icon : "🔗")+'</span>'
+        +'<input class="field" id="url-input" type="url" inputmode="url" autocomplete="off" '
+          +'placeholder="Pega tu link aquí..." '
+          +'value="'+esc(input)+'" '
+          +'oninput="setInput(this.value)" '
+          +'onkeydown="if(event.key===\'Enter\')addLink()" '
+          +'style="border-color:'+(preview ? preview.color+'44' : '#1a1a1e')+'" />'
+        +(preview ? '<span class="platform-badge" style="color:'+preview.color+'">'+preview.name+'</span>' : '')
+      +'</div>'
+      +'<input class="field note" type="text" autocomplete="off" '
+        +'placeholder="Nota (opcional)" '
+        +'value="'+esc(note)+'" '
+        +'oninput="setNote(this.value)" '
+        +'onkeydown="if(event.key===\'Enter\')addLink()" />'
+      +(previewCat ? '<div class="cat-preview"><span class="cat-preview-emoji">'+previewCat.emoji+'</span><div><div class="cat-preview-label">Categoría</div><div class="cat-preview-name">'+previewCat.name+'</div></div></div>' : '')
+      +'<button class="save-btn" onclick="addLink()" '
+        +'style="background:'+(preview ? preview.color : '#f0f0f0')+';color:'+(preview ? '#fff' : '#080809')+'">Guardar</button>'
+      +'</div>';
+  }
+
+  html += '<div class="tabs">'
+    +'<div class="tab'+(tab==="cat"?" active":"")+'" onclick="setTab(\'cat\')">Categorías</div>'
+    +'<div class="tab'+(tab==="plat"?" active":"")+'" onclick="setTab(\'plat\')">Plataformas</div>'
+    +'</div>'
+    +'<div class="filters"><div class="filters-inner">'+pillsHtml+'</div></div>'
+    +'<div class="grid">'+cardsHtml+'</div>'
+    +(toast ? '<div class="toast">'+toast+'</div>' : '');
+
+  document.getElementById("app").innerHTML = html;
+
+  if (adding) {
+    var inp = document.getElementById("url-input");
+    if (inp) setTimeout(function(){ inp.focus(); }, 50);
+  }
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+function toggleAdd() { state.adding = !state.adding; render(); }
 function setTab(t) { state.tab = t; state.filter = "all"; render();
