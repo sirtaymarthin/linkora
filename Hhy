@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LinkVault</title>
+  <style>
+    body { background: #080809; color: #f0f0f0; font-family: sans-serif; padding: 24px; }
+    h1 { font-size: 32px; margin-bottom: 20px; }
+    p { color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Links</h1>
+  <p>Funciona ✓</p>
+</body>
+</html>
