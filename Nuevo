@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#080809" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="LinkVault" />
+  <meta name="description" content="Guarda tus links al instante" />
+  <link rel="manifest" href="manifest.json" />
+  <title>LinkVault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #080809; color: #c8c8cc; font-family: 'Inter', sans-serif; overscroll-behavior: none; -webkit-font-smoothing: antialiased; }
+    ::-webkit-scrollbar { width: 0; }
+    #app { min-height: 100vh; display: flex; flex-direction: column; }
+    .header { padding: 48px 24px 24px; display: flex; align-items: flex-end; justify-content: space-between; position: sticky; top: 0; background: #080809; z-index: 10; border-bottom: 1px solid #111; }
+    .header-title { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: #f0f0f0; letter-spacing: -0.02em; line-height: 1; }
+    .header-sub { font-size: 10px; font-weight: 500; letter-spacing: 0.2em; color: #333; text-transform: uppercase; margin-bottom: 6px; }
+    .add-btn { width: 44px; height: 44px; border-radius: 50%; background: #f0f0f0; color: #080809; border: none; font-size: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+    .add-btn.open { background: #1a1a1e; color: #f0f0f0; font-size: 18px; }
+    .add-btn:active { transform: scale(0.92); }
+    .add-form { padding: 20px 24px 24px; background: #080809; border-bottom: 1px solid #111; animation: slideDown 0.2s ease; }
+    .input-wrap { position: relative; margin-bottom: 10px; }
+    .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; }
+    .platform-badge { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+    .field { width: 100%; background: #0f0f12; border: 1px solid #1a1a1e; border-radius: 12px; padding: 14px 14px 14px 42px; font-size: 14px; color: #e0e0e0; font-family: 'Inter', sans-serif; transition: border-color 0.2s; -webkit-appearance: none; }
+    .field:focus { outline: none; border-color: #333; }
+    .field.note { padding-left: 14px; font-size: 13px; color: #888; margin-bottom: 14px; }
+    .field::placeholder { color: #2a2a2e; }
+    .save-btn { width: 100%; background: #f0f0f0; color: #080809; border: none; border-radius: 12px; padding: 14px; font-size: 13px; font-family: 'Inter', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+    .save-btn:active { opacity: 0.85; }
+    .save-btn:disabled { opacity: 0.4; }
+    .cat-detecting { font-size: 11px; color: #444; text-align: center; padding: 8px 0; animation: pulse 1.2s infinite; }
+    .cat-result { display: flex; align-items: center; gap: 8px; background: #0f0f12; border: 1px solid #1a1a1e; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+    .cat-result-emoji { font-size: 20px; }
+    .cat-result-info { flex: 1; }
+    .cat-result-label { font-size: 10px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; }
+    .cat-result-name { font-size: 14px; font-weight: 600; color: #f0f0f0; }
+    .tabs { display: flex; border-bottom: 1px solid #111; padding: 0 24px; gap: 4px; }
+    .tab { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #333; padding: 14px 4px; margin-right: 20px; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+    .tab.active { color: #f0f0f0; border-bottom-color: #f0f0f0; }
+    .filters { padding: 14px 24px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .filters::-webkit-scrollbar { display: none; }
+    .filters-inner { display: flex; gap: 8px; padding-bottom: 2px; width: max-content; }
+    .pill { background: transparent; color: #333; border: 1px solid #1a1a1e; border-radius: 100px; padding: 6px 14px; font-size: 11px; font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+    .pill.active { color: #080809; border-color: transparent; }
+    .pill:active { opacity: 0.7; }
+    .grid { padding: 20px 24px 120px; display: flex; flex-direction: column; gap: 1px; }
+    .card { background: #080809; border-bottom: 1px solid #111; padding: 16px 0; animation: fadeIn 0.2s ease; display: flex; gap: 14px; align-items: flex-start; }
+    .card-thumb-wrap { width: 72px; height: 72px; flex-shrink: 0; border-radius: 10px; overflow: hidden; background: #0f0f12; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .card-thumb-wrap a { display: block; width: 100%; height: 100%; }
+    .card-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card-content { flex: 1; min-width: 0; }
+    .card-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
+    .card-platform-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .card-platform-name { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+    .card-cat-badge { font-size: 9px; font-weight: 500; color: #555; background: #111; border-radius: 4px; padding: 2px 6px; letter-spacing: 0.06em; }
+    .card-url { font-size: 14px; font-weight: 500; color: #e8e8ec; text-decoration: none; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px; line-height: 1.3; }
+    .card-note { font-size: 12px; color: #444; line-height: 1.4; margin-bottom: 8px; }
+    .card-time { font-size: 10px; color: #2a2a2e; letter-spacing: 0.04em; }
+    .card-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; padding-top: 2px; }
+    .act-btn { width: 36px; height: 36px; border-radius: 10px; background: #0f0f12; border: 1px solid #1a1a1e; color: #555; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.12s; -webkit-tap-highlight-color: transparent; text-decoration: none; }
+    .act-btn:active { background: #1a1a1e; color: #e0e0e0; transform: scale(0.92); }
+    .act-btn.danger:active { color: #ff4444; }
+    .wa-btn { background: #0a1f0f; border-color: #25D36633; }
+    .wa-btn:active { background: #25D36622; }
+    .empty { padding: 80px 0; text-align: center; color: #222; font-size: 13px; }
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #1a1a1e; color: #e0e0e0; padding: 12px 22px; border-radius: 100px; font-size: 12px; font-weight: 500; z-index: 100; animation: fadeIn 0.2s ease; box-shadow: 0 8px 32px rgba(0,0,0,0.6); pointer-events: none; white-space: nowrap; border: 1px solid #222; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const API_KEY = "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";
+
+const CATEGORIES = [
+  { id: "running",  name: "Running",  emoji: "🏃" },
+  { id: "musica",   name: "Música",   emoji: "🎵" },
+  { id: "recetas",  name: "Recetas",  emoji: "🍳" },
+  { id: "futbol",   name: "Fútbol",   emoji: "⚽" },
+  { id: "otros",    name: "Otros",    emoji: "📌" },
+];
+
+const PLATFORMS = [
+  { name: "Instagram", color: "#E1306C", bg: "#1a0510", icon: "📸", re: /instagram\.com/i },
+  { name: "YouTube",   color: "#FF0000", bg: "#150000", icon: "▶️", re: /youtube\.com|youtu\.be/i },
+  { name: "TikTok",    color: "#69C9D0", bg: "#00100f", icon: "🎵", re: /tiktok\.com/i },
+  { name: "Twitter/X", color: "#1DA1F2", bg: "#000d18", icon: "𝕏",  re: /twitter\.com|x\.com/i },
+  { name: "Twitch",    color: "#9146FF", bg: "#0d0020", icon: "🟣", re: /twitch\.tv/i },
+  { name: "Spotify",   color: "#1DB954", bg: "#001508", icon: "🎧", re: /spotify\.com/i },
+  { name: "Pinterest", color: "#E60023", bg: "#150003", icon: "📌", re: /pinterest\.com/i },
+  { name: "LinkedIn",  color: "#0A66C2", bg: "#000d18", icon: "💼", re: /linkedin\.com/i },
+];
+const FALLBACK = { name: "Web", color: "#555", bg: "#0f0f12", icon: "🔗" };
+
+function detect(url) { return PLATFORMS.find(p => p.re.test(url)) || FALLBACK; }
+function domain(url) { try { return new URL(url).hostname.replace("www.",""); } catch { return url; } }
+function getCat(id) { return CATEGORIES.find(c => c.id === id) || CATEGORIES[4]; }
+function timeAgo(ts) {
+  const d = Date.now() - ts, m = Math.floor(d/60000);
+  if (m < 1) return "ahora mismo";
+  if (m < 60) return m + "m";
+  const h = Math.floor(m/60);
+  if (h < 24) return h + "h";
+  return Math.floor(h/24) + "d";
+}
+function getYouTubeId(url) {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+// ── AI CATEGORIZATION ────────────────────────────────────────────────────────
+async function autoCategory(url, note) {
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": API_KEY,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 10,
+        messages: [{
+          role: "user",
+          content: `Clasifica este link en UNA categoría. Responde SOLO con el id exacto.
+URL: ${url}
+Nota: ${note || ""}
+Categorías: running, musica, recetas, futbol, otros`
+        }]
+      })
+    });
+    const data = await res.json();
+    const text = data?.content?.[0]?.text?.trim().toLowerCase() || "otros";
+    const match = CATEGORIES.find(c => text.includes(c.id));
+    return match ? match.id : "otros";
+  } catch {
+    return "otros";
+  }
+}
+
+// ── THUMBNAIL ────────────────────────────────────────────────────────────────
+const thumbCache = {};
+async function fetchMicrolink(url, id) {
+  if (thumbCache[url]) { applyThumb(url, id, thumbCache[url]); return; }
+  try {
+    const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=false`);
+    const data = await res.json();
+    const img = data?.data?.image?.url;
+    if (img) { thumbCache[url] = img; applyThumb(url, id, img); }
+  } catch {}
+}
+function applyThumb(url, id, imgUrl) {
+  const el = document.getElementById('thumb-' + id);
+  if (el) {
+    el.innerHTML = `<a href="${escHtml(url)}" target="_blank" rel="noreferrer" style="display:block;width:100%;height:100%">
+      <img class="card-thumb" src="${escHtml(imgUrl)}" loading="lazy" onerror="this.style.display='none'" alt="" />
+    </a>`;
+  }
+}
+
+// ── STORAGE ──────────────────────────────────────────────────────────────────
+const STORAGE_KEY = "linkvault_links_v3";
+function loadLinks() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
+function saveLinks(links) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(links)); } catch {} }
+
+let state = {
+  links: loadLinks().length ? loadLinks() : [
+    { id:1, url:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", note:"Tutorial running cadencia", platform: detect("https://www.youtube.com/watch?v=dQw4w9WgXcQ"), category: "running", date: Date.now()-3600000 },
+    { id:2, url:"https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M", note:"Lista entreno", platform: detect("https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M"), category: "musica", date: Date.now()-7200000 },
+    { id:3, url:"https://www.youtube.com/watch?v=QH2-TGUlwu4", note:"Receta pasta", platform: detect("https://www.youtube.com/watch?v=QH2-TGUlwu4"), category: "recetas", date: Date.now()-86400000 },
+  ],
+  input: "", note: "", filter: "all", tab: "cat",
+  adding: false, detecting: false, detectedCat: null, toast: null,
+};
+
+function escHtml(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ── RENDER CARD ───────────────────────────────────────────────────────────────
+function renderCard(link) {
+  const ytId = getYouTubeId(link.url);
+  let thumbInner = "";
+  if (ytId) {
+    thumbInner = `<a href="${escHtml(link.url)}" target="_blank" rel="noreferrer" style="display:block;width:100%;height:100%">
+      <img class="card-thumb" src="https://img.youtube.com/vi/${ytId}/hqdefault.jpg" loading="lazy" onerror="this.style.display='none'" alt="" />
+    </a>`;
+  } else if (thumbCache[link.url]) {
+    thumbInner = `<a href="${escHtml(link.url)}" target="_blank" rel="noreferrer" style="display:block;width:100%;height:100%">
+      <img class="card-thumb" src="${escHtml(thumbCache[link.url])}" loading="lazy" onerror="this.style.display='none'" alt="" />
+    </a>`;
+  } else {
+    thumbInner = `<span style="font-size:28px">${link.platform.icon}</span>`;
+    setTimeout(() => fetchMicrolink(link.url, link.id), 50);
+  }
+
+  const cat = getCat(link.category);
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(link.url)}`;
+
+  return `
+  <div class="card">
+    <div id="thumb-${link.id}" class="card-thumb-wrap" style="background:${link.platform.bg}">${thumbInner}</div>
+    <div class="card-content">
+      <div class="card-meta">
+        <div class="card-platform-dot" style="background:${link.platform.color}"></div>
+        <span class="card-platform-name" style="color:${link.platform.color}">${link.platform.name}</span>
+        <span class="card-cat-badge">${cat.emoji} ${cat.name}</span>
+      </div>
+      <a class="card-url" href="${escHtml(link.url)}" target="_blank" rel="noreferrer">${escHtml(domain(link.url))}</a>
+      ${link.note ? `<div class="card-note">${escHtml(link.note)}</div>` : ""}
+      <div class="card-time">${timeAgo(link.date)}</div>
+    </div>
+    <div class="card-actions">
+      <a class="act-btn wa-btn" href="${escHtml(waUrl)}" target="_blank" rel="noreferrer" title="WhatsApp">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </a>
+      <button class="act-btn" onclick="copyLink('${escHtml(link.url)}')" title="Copiar">⎘</button>
+      <button class="act-btn danger" onclick="deleteLink(${link.id})" title="Eliminar">✕</button>
+    </div>
+  </div>`;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render() {
+  const { links, input, note, filter, tab, adding, detecting, detectedCat, toast } = state;
+  const preview = input.startsWith("http") ? detect(input) : null;
+
+  // Build filter lists
+  const catCounts = {};
+  const platCounts = {};
+  links.forEach(l => {
+    catCounts[l.category] = (catCounts[l.category]||0)+1;
+    platCounts[l.platform.name] = (platCounts[l.platform.name]||0)+1;
+  });
+
+  let filtered = links;
+  if (tab === "cat" && filter !== "all") filtered = links.filter(l => l.category === filter);
+  if (tab === "plat" && filter !== "all") filtered = links.filter(l => l.platform.name === filter);
+
+  const catFilters = ["all", ...CATEGORIES.map(c=>c.id).filter(id=>catCounts[id])];
+  const platFilters = ["all", ...PLATFORMS.map(p=>p.name).filter(n=>platCounts[n]), ...(platCounts["Web"]?["Web"]:[])];
+  const activeFilters = tab === "cat" ? catFilters : platFilters;
+
+  const detCat = detectedCat ? getCat(detectedCat) : null;
+
+  document.getElementById("app").innerHTML = `
+    <div class="header">
+      <div>
+        <div class="header-sub">Your Vault</div>
+        <div class="header-title">Links</div>
+      </div>
+      <button class="add-btn ${adding?'open':''}" onclick="toggleAdd()">${adding ? "✕" : "+"}</button>
+    </div>
+
+    ${adding ? `
+    <div class="add-form">
+      <div class="input-wrap">
+        <span class="input-icon">${preview ? preview.icon : "🔗"}</span>
+        <input class="field" id="url-input" type="url" inputmode="url" autocomplete="off"
+          placeholder="Pega tu link aquí..."
+          value="${escHtml(input)}"
+          oninput="setInput(this.value)"
+          onkeydown="if(event.key==='Enter')addLink()"
+          style="border-color:${preview ? preview.color+'44' : '#1a1a1e'}"
+        />
+        ${preview ? `<span class="platform-badge" style="color:${preview.color}">${preview.name}</span>` : ""}
+      </div>
+      <input class="field note" type="text" autocomplete="off"
+        placeholder="Nota (opcional — ayuda a categorizar)"
+        value="${escHtml(note)}"
+        oninput="setNote(this.value)"
+        onkeydown="if(event.key==='Enter')addLink()"
+      />
+      ${detecting ? `<div class="cat-detecting">🤖 Detectando categoría...</div>` : ""}
+      ${detCat && !detecting ? `
+        <div class="cat-result">
+          <span class="cat-result-emoji">${detCat.emoji}</span>
+          <div class="cat-result-info">
+            <div class="cat-result-label">Categoría detectada</div>
+            <div class="cat-result-name">${detCat.name}</div>
+          </div>
+        </div>` : ""}
+      <button class="save-btn" onclick="addLink()" ${detecting ? 'disabled' : ''}
+        style="background:${preview?.color||'#f0f0f0'};color:${preview?'#fff':'#080809'}">
+        ${detecting ? "Detectando..." : "Guardar"}
+      </button>
+    </div>` : ""}
+
+    <div class="tabs">
+      <div class="tab ${tab==='cat'?'active':''}" onclick="setTab('cat')">Categorías</div>
+      <div class="tab ${tab==='plat'?'active':''}" onclick="setTab('plat')">Plataformas</div>
+    </div>
+
+    <div class="filters">
+      <div class="filters-inner">
+        ${activeFilters.map(f => {
+          const cat = CATEGORIES.find(c=>c.id===f);
+          const plat = PLATFORMS.find(p=>p.name===f);
+          const active = filter === f;
+          const color = cat ? "#f0f0f0" : plat?.color || "#f0f0f0";
+          const count = tab==='cat' ? (catCounts[f]||links.length) : (platCounts[f]||links.length);
+          const label = f==="all" ? `Todo · ${links.length}` :
