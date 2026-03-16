@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0c0c0e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="LinkVault" />
+  <meta name="description" content="Guarda tus links de redes sociales al instante" />
+  <link rel="manifest" href="manifest.json" />
+  <title>LinkVault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #0c0c0e; color: #e0e0e0; font-family: 'DM Mono', 'Courier New', monospace; overscroll-behavior: none; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #0c0c0e; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    #app { min-height: 100vh; display: flex; flex-direction: column; }
+    .header { border-bottom: 1px solid #1e1e1e; padding: 28px 20px 18px; display: flex; align-items: flex-end; justify-content: space-between; position: sticky; top: 0; background: #0c0c0e; z-index: 10; }
+    .header-sub { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.25em; color: #555; text-transform: uppercase; margin-bottom: 5px; }
+    .header h1 { font-family: 'Syne', sans-serif; font-size: clamp(26px, 8vw, 40px); font-weight: 800; letter-spacing: -0.02em; color: #f0f0f0; line-height: 1; }
+    .add-btn { background: #f0f0f0; color: #0c0c0e; border: none; border-radius: 8px; padding: 10px 18px; font-size: 13px; font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer; letter-spacing: 0.04em; transition: all 0.15s; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+    .add-btn.open { background: #1e1e1e; color: #f0f0f0; }
+    .add-btn:active { transform: scale(0.96); }
+    .add-form { border-bottom: 1px solid #1e1e1e; padding: 20px; background: #0f0f11; animation: slideDown 0.2s ease; }
+    .input-wrap { position: relative; margin-bottom: 10px; }
+    .input-wrap .icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 18px; pointer-events: none; }
+    .input-wrap .platform-badge { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; }
+    .field { width: 100%; background: #161618; border: 1px solid #282828; border-radius: 8px; padding: 13px 14px 13px 42px; font-size: 14px; color: #e0e0e0; font-family: 'DM Mono', monospace; transition: border-color 0.2s; -webkit-appearance: none; }
+    .field:focus { outline: none; }
+    .field.note { padding-left: 14px; margin-bottom: 12px; font-size: 13px; color: #aaa; }
+    .field::placeholder { color: #444; }
+    .save-btn { background: #444; color: #fff; border: none; border-radius: 8px; padding: 12px 24px; font-size: 13px; font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer; letter-spacing: 0.04em; transition: background 0.2s; width: 100%; -webkit-tap-highlight-color: transparent; }
+    .save-btn:active { opacity: 0.85; }
+    .filters { padding: 16px 20px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .filters::-webkit-scrollbar { display: none; }
+    .filters-inner { display: flex; gap: 7px; padding-bottom: 4px; width: max-content; }
+    .pill { background: #161618; color: #666; border: 1px solid #252525; border-radius: 6px; padding: 6px 13px; font-size: 11px; font-family: 'DM Mono', monospace; cursor: pointer; white-space: nowrap; letter-spacing: 0.04em; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+    .pill.active { color: #fff; }
+    .pill:active { opacity: 0.75; }
+    .grid { padding: 16px 20px 100px; display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    .card { border-radius: 12px; overflow: hidden; animation: fadeIn 0.25s ease; border-width: 1px; border-style: solid; }
+    .card-thumb-link { display: block; background: #111; }
+    .card-thumb { width: 100%; height: 170px; object-fit: contain; display: block; background: #111; }
+    .card-placeholder { width: 100%; height: 80px; display: flex; align-items: center; justify-content: center; font-size: 36px; }
+    .card-body { padding: 14px 16px; position: relative; }
+    .card-glow { position: absolute; top: 0; right: 0; width: 80px; height: 80px; pointer-events: none; }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .card-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .card-icon { font-size: 18px; flex-shrink: 0; }
+    .card-info { min-width: 0; }
+    .card-platform { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; margin-bottom: 3px; }
+    .card-url { font-size: 12px; color: #d0d0d0; text-decoration: none; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-actions { display: flex; gap: 2px; flex-shrink: 0; }
+    .icon-btn { background: none; border: none; color: #e0e0e0; font-size: 14px; cursor: pointer; opacity: 0.35; padding: 4px 5px; border-radius: 4px; transition: opacity 0.12s; -webkit-tap-highlight-color: transparent; }
+    .icon-btn:active { opacity: 1; }
+    .card-note { margin-top: 10px; font-size: 12px; color: #888; line-height: 1.5; border-top-width: 1px; border-top-style: solid; padding-top: 9px; }
+    .card-time { margin-top: 8px; font-size: 10px; color: #3a3a3a; letter-spacing: 0.06em; }
+    .empty { grid-column: 1/-1; padding: 60px 0; text-align: center; color: #333; font-size: 13px; }
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #222; color: #e0e0e0; padding: 10px 20px; border-radius: 8px; font-size: 12px; z-index: 100; animation: fadeIn 0.2s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.5); pointer-events: none; white-space: nowrap; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const PLATFORMS = [
+  { name: "Instagram", color: "#E1306C", bg: "#3d0a1a", icon: "📸", re: /instagram\.com/i },
+  { name: "YouTube",   color: "#FF0000", bg: "#2a0000", icon: "▶️", re: /youtube\.com|youtu\.be/i },
+  { name: "TikTok",    color: "#69C9D0", bg: "#001a1c", icon: "🎵", re: /tiktok\.com/i },
+  { name: "Twitter/X", color: "#1DA1F2", bg: "#001a2e", icon: "𝕏",  re: /twitter\.com|x\.com/i },
+  { name: "Twitch",    color: "#9146FF", bg: "#1a0033", icon: "🟣", re: /twitch\.tv/i },
+  { name: "Spotify",   color: "#1DB954", bg: "#001a09", icon: "🎧", re: /spotify\.com/i },
+  { name: "Pinterest", color: "#E60023", bg: "#2a0006", icon: "📌", re: /pinterest\.com/i },
+  { name: "LinkedIn",  color: "#0A66C2", bg: "#001628", icon: "💼", re: /linkedin\.com/i },
+];
+const FALLBACK = { name: "Web", color: "#aaaaaa", bg: "#1a1a1a", icon: "🔗" };
+
+function detect(url) { return PLATFORMS.find(p => p.re.test(url)) || FALLBACK; }
+function domain(url) { try { return new URL(url).hostname.replace("www.",""); } catch { return url; } }
+function timeAgo(ts) {
+  const d = Date.now() - ts, m = Math.floor(d/60000);
+  if (m < 1) return "ahora mismo";
+  if (m < 60) return m + "m";
+  const h = Math.floor(m/60);
+  if (h < 24) return h + "h";
+  return Math.floor(h/24) + "d";
+}
+
+function getYouTubeId(url) {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+const thumbCache = {};
+
+async function fetchMicrolink(url, id) {
+  if (thumbCache[url]) { applyThumb(url, id, thumbCache[url]); return; }
+  try {
+    const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=false`);
+    const data = await res.json();
+    const img = data?.data?.image?.url;
+    if (img) { thumbCache[url] = img; applyThumb(url, id, img); }
+  } catch {}
+}
+
+function applyThumb(url, id, imgUrl) {
+  const el = document.getElementById('thumb-' + id);
+  if (el) {
+    el.outerHTML = `<a class="card-thumb-link" href="${escHtml(url)}" target="_blank" rel="noreferrer">
+      <img class="card-thumb" src="${escHtml(imgUrl)}" loading="lazy" onerror="this.style.display='none'" alt="" />
+    </a>`;
+  }
+}
+
+const STORAGE_KEY = "linkvault_links_v2";
+function loadLinks() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
+function saveLinks(links) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(links)); } catch {} }
+
+let state = {
+  links: loadLinks().length ? loadLinks() : [
+    { id:1, url:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", note:"Tutorial que no quiero olvidar", platform: detect("https://www.youtube.com/watch?v=dQw4w9WgXcQ"), date: Date.now()-3600000 },
+    { id:2, url:"https://www.instagram.com/p/example", note:"Inspo foto urbana", platform: detect("https://www.instagram.com/p/example"), date: Date.now()-120000 },
+    { id:3, url:"https://www.tiktok.com/@user/video/123", note:"Receta rápida", platform: detect("https://www.tiktok.com/@user/video/123"), date: Date.now()-86400000 },
+  ],
+  input: "", note: "", filter: "All", adding: false, toast: null,
+};
+
+function escHtml(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function renderCard(link) {
+  const ytId = getYouTubeId(link.url);
+  let thumbHtml = "";
+
+  if (ytId) {
+    thumbHtml = `<a class="card-thumb-link" href="${escHtml(link.url)}" target="_blank" rel="noreferrer">
+      <img class="card-thumb" src="https://img.youtube.com/vi/${ytId}/hqdefault.jpg" loading="lazy" onerror="this.style.display='none'" alt="" />
+    </a>`;
+  } else if (thumbCache[link.url]) {
+    thumbHtml = `<a class="card-thumb-link" href="${escHtml(link.url)}" target="_blank" rel="noreferrer">
+      <img class="card-thumb" src="${escHtml(thumbCache[link.url])}" loading="lazy" onerror="this.style.display='none'" alt="" />
+    </a>`;
+  } else {
+    thumbHtml = `<div id="thumb-${link.id}" class="card-placeholder" style="background:${link.platform.bg}">${link.platform.icon}</div>`;
+    setTimeout(() => fetchMicrolink(link.url, link.id), 50);
+  }
+
+  return `
+  <div class="card" style="background:${link.platform.bg};border-color:${link.platform.color}22">
+    ${thumbHtml}
+    <div class="card-body">
+      <div class="card-glow" style="background:radial-gradient(circle at top right,${link.platform.color}18,transparent 70%)"></div>
+      <div class="card-top">
+        <div class="card-left">
+          <span class="card-icon">${link.platform.icon}</span>
+          <div class="card-info">
+            <div class="card-platform" style="color:${link.platform.color}">${link.platform.name}</div>
+            <a class="card-url" href="${escHtml(link.url)}" target="_blank" rel="noreferrer">${escHtml(domain(link.url))}</a>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="icon-btn" onclick="copyLink('${escHtml(link.url)}')" title="Copiar">⎘</button>
+          <button class="icon-btn" onclick="shareWhatsapp('${escHtml(link.url)}')" title="WhatsApp">💬</button>
+          <button class="icon-btn" onclick="openLink('${escHtml(link.url)}')" title="Abrir">↗</button>
+          <button class="icon-btn" onclick="deleteLink(${link.id})" title="Eliminar">✕</button>
+        </div>
+      </div>
+      ${link.note ? `<p class="card-note" style="border-top-color:${link.platform.color}18">${escHtml(link.note)}</p>` : ""}
+      <div class="card-time">${timeAgo(link.date)}</div>
+    </div>
+  </div>`;
+}
+
+function render() {
+  const { links, input, note, filter, adding, toast } = state;
+  const preview = input.startsWith("http") ? detect(input) : null;
+  const counts = {};
+  links.forEach(l => counts[l.platform.name] = (counts[l.platform.name]||0)+1);
+  const filtered = filter === "All" ? links : links.filter(l => l.platform.name === filter);
+  const filters = ["All", ...PLATFORMS.map(p=>p.name).filter(n=>counts[n]), ...(counts["Web"] ? ["Web"] : [])];
+
+  document.getElementById("app").innerHTML = `
+    <div class="header">
+      <div>
+        <div class="header-sub">YOUR VAULT</div>
+        <h1>Links</h1>
+      </div>
+      <button class="add-btn ${adding?'open':''}" onclick="toggleAdd()">
+        ${adding ? "✕ Cerrar" : "+ Guardar"}
+      </button>
+    </div>
+
+    ${adding ? `
+    <div class="add-form">
+      <div class="input-wrap">
+        <span class="icon">${preview ? preview.icon : "🔗"}</span>
+        <input class="field" id="url-input" type="url" inputmode="url" autocomplete="off"
+          placeholder="Pega tu link aquí..."
+          value="${escHtml(input)}"
+          oninput="setInput(this.value)"
+          onkeydown="if(event.key==='Enter')addLink()"
+          style="border-color:${preview ? preview.color+'55' : '#282828'}"
+        />
+        ${preview ? `<span class="platform-badge" style="color:${preview.color}">${preview.name}</span>` : ""}
+      </div>
+      <input class="field note" type="text" autocomplete="off"
+        placeholder="Nota rápida (opcional)"
+        value="${escHtml(note)}"
+        oninput="setNote(this.value)"
+        onkeydown="if(event.key==='Enter')addLink()"
+      />
+      <button class="save-btn" style="background:${preview?.color||'#444'}" onclick="addLink()">
+        Guardar link →
+      </button>
+    </div>` : ""}
+
+    <div class="filters">
+      <div class="filters-inner">
+        ${filters.map(f => {
+          const p = PLATFORMS.find(x=>x.name===f);
+          const active = filter === f;
+          return `<button class="pill ${active?'active':''}"
+            style="${active ? `background:${p?.color||'#e0e0e0'};border-color:${p?.color||'#e0e0e0'}` : ''}"
+            onclick="setFilter('${f}')">
+            ${f==="All" ? `All (${links.length})` : `${f} (${counts[f]})`}
+          </button>`;
+        }).join("")}
+      </div>
+    </div>
+
+    <div class="grid">
+      ${filtered.length === 0
+        ? `<div class="empty">No hay links guardados aún.</div>`
+        : filtered.map(renderCard).join("")}
+    </div>
+
+    ${toast ? `<div class="toast">${toast}</div>` : ""}
+  `;
+
+  if (adding) {
+    const inp = document.getElementById("url-input");
+    if (inp) setTimeout(() => inp.focus(), 50);
+  }
+}
+
+function toggleAdd() { state.adding = !state.adding; render(); }
+function setInput(v) { state.input = v; render(); }
+function setNote(v) { state.note = v; render(); }
+function setFilter(f) { state.filter = f; render(); }
+
+function addLink() {
+  const url = state.input.trim();
+  if (!url) return;
+  const link = { id: Date.now(), url, note: state.note.trim(), platform: detect(url), date: Date.now() };
+  state.links = [link, ...state.links];
+  saveLinks(state.links);
+  state.input = ""; state.note = ""; state.adding = false;
+  showToast("✓ Link guardado");
+  render();
+}
+
+function deleteLink(id) {
+  state.links = state.links.filter(l => l.id !== id);
+  saveLinks(state.links);
+  render();
+}
+
+function copyLink(url) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast("✓ Copiado"));
+  } else {
+    const ta = document.createElement("textarea");
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); document.body.removeChild(ta);
+    showToast("✓ Copiado");
+  }
+}
+
+function shareWhatsapp(url) {
+  window.open(`https://wa.me/?text=${encodeURIComponent(url)}`, "_blank", "noopener");
+}
+
+function openLink(url) { window.open(url, "_blank", "noopener"); }
+
+function showToast(msg) {
+  state.toast = msg; render();
+  setTimeout(() => { state.toast = null; render(); }, 2000);
+}
+
+render();
+</script>
+</body>
+</html>
+
