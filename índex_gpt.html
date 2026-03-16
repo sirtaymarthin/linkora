@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkVault</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui;background:#F2F2F7;color:#1C1C1E}
+
+.view{display:none;flex-direction:column;min-height:100vh}
+.view.active{display:flex}
+
+.safe{height:env(safe-area-inset-top,20px)}
+
+.cat-scroll{flex:1;padding:20px 20px 120px;overflow:auto}
+
+.cat-card{
+border-radius:20px;
+padding:20px;
+margin-bottom:12px;
+color:#fff;
+font-weight:700;
+display:flex;
+justify-content:space-between;
+align-items:center;
+cursor:pointer;
+}
+
+.detail-scroll{
+flex:1;
+padding:14px 16px 120px;
+overflow:auto;
+display:grid;
+grid-template-columns:1fr;
+gap:14px;
+}
+
+.link{
+background:#fff;
+border-radius:14px;
+overflow:hidden;
+box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
+
+.thumb{
+width:100%;
+aspect-ratio:16/9;
+background:#eee;
+display:block;
+}
+
+.thumb img{
+width:100%;
+height:100%;
+object-fit:cover;
+display:block;
+}
+
+.meta{padding:10px 12px}
+
+.url{
+font-weight:600;
+font-size:14px;
+color:#1C1C1E;
+text-decoration:none;
+}
+
+.note{
+font-size:12px;
+color:#8E8E93;
+margin-top:2px;
+}
+
+.time{
+font-size:11px;
+color:#C7C7CC;
+margin-top:4px;
+}
+
+.actions{
+display:flex;
+gap:8px;
+margin-top:8px;
+}
+
+.btn{
+padding:6px 10px;
+border-radius:8px;
+border:none;
+font-size:12px;
+cursor:pointer;
+}
+
+.wa{background:#25D366;color:white}
+.del{background:#FF3B30;color:white}
+
+.fab{
+position:fixed;
+right:24px;
+bottom:28px;
+width:60px;
+height:60px;
+border-radius:50%;
+background:#007AFF;
+color:#fff;
+border:none;
+font-size:30px;
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:0 6px 20px rgba(0,122,255,.35);
+cursor:pointer;
+}
+
+.sheet-bg{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.4);
+display:flex;
+align-items:flex-end;
+}
+
+.sheet{
+background:#fff;
+width:100%;
+border-radius:22px 22px 0 0;
+padding:22px 20px 40px;
+}
+
+.input,.select{
+width:100%;
+padding:14px;
+border-radius:12px;
+border:none;
+background:#F2F2F7;
+margin-bottom:10px;
+font-size:15px;
+}
+
+.save{
+width:100%;
+padding:16px;
+border:none;
+border-radius:14px;
+background:#007AFF;
+color:#fff;
+font-weight:700;
+font-size:16px;
+margin-top:6px;
+}
+
+.back{
+padding:14px 20px;
+font-weight:600;
+color:#007AFF;
+cursor:pointer;
+}
+
+.empty{
+padding:60px 20px;
+text-align:center;
+color:#C7C7CC;
+}
+
+.icon-picker{
+display:grid;
+grid-template-columns:repeat(6,1fr);
+gap:8px;
+margin-bottom:10px;
+}
+
+.icon{
+font-size:22px;
+background:#F2F2F7;
+border-radius:8px;
+padding:8px;
+text-align:center;
+cursor:pointer;
+}
+
+.icon.sel{
+background:#007AFF;
+color:#fff;
+}
+</style>
+</head>
+<body>
+
+<div id="home" class="view active">
+<div class="safe"></div>
+<div class="cat-scroll" id="cats"></div>
+<button class="fab" onclick="openAdd()">＋</button>
+</div>
+
+<div id="detail" class="view">
+<div class="safe"></div>
+<div class="back" onclick="goHome()">← Categorías</div>
+<div class="detail-scroll" id="links"></div>
+<button class="fab" onclick="openAdd()">＋</button>
+</div>
+
+<div id="sheet" style="display:none"></div>
+
+<script>
+
+const DEFAULT_CATS=[
+{id:"musica",name:"Música",emoji:"🎵",grad:"linear-gradient(135deg,#FF6B6B,#FF8E53)"},
+{id:"videos",name:"Videos",emoji:"🎬",grad:"linear-gradient(135deg,#4ECDC4,#44A8F0)"},
+{id:"recetas",name:"Recetas",emoji:"🍳",grad:"linear-gradient(135deg,#45B649,#DCE35B)"},
+{id:"deporte",name:"Deporte",emoji:"⚽",grad:"linear-gradient(135deg,#667EEA,#764BA2)"},
+{id:"ideas",name:"Ideas",emoji:"💡",grad:"linear-gradient(135deg,#f093fb,#f5576c)"},
+{id:"viajes",name:"Viajes",emoji:"✈️",grad:"linear-gradient(135deg,#4facfe,#00f2fe)"},
+{id:"varios",name:"Varios",emoji:"📌",grad:"linear-gradient(135deg,#F7971E,#FFD200)"}
+]
+
+const ICONS=["🎵","🎬","🍳","⚽","💡","✈️","📚","💻","🎮","🎧","📸","⭐","🧠","🏠"]
+
+const SK_LINKS="lv_links"
+const SK_CATS="lv_cats"
+
+function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch{return d}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+
+let state={
+links:load(SK_LINKS,[]),
+cats:load(SK_CATS,DEFAULT_CATS),
+cur:null,
+prefCat:null
+}
+
+function domain(u){
+try{return new URL(u).hostname.replace("www.","")}
+catch{return u}
+}
+
+function ago(t){
+let m=Math.floor((Date.now()-t)/60000)
+if(m<1)return"ahora"
+if(m<60)return m+"m"
+let h=Math.floor(m/60)
+if(h<24)return h+"h"
+return Math.floor(h/24)+"d"
+}
+
+function thumb(url){
+
+let yt=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)
+if(yt) return "https://img.youtube.com/vi/"+yt[1]+"/hqdefault.jpg"
+
+return "https://api.microlink.io/?url="+encodeURIComponent(url)+"&meta=true&embed=image.url"
+
+}
+
+function renderCats(){
+
+let counts={}
+
+state.links.forEach(l=>counts[l.cat]=(counts[l.cat]||0)+1)
+
+let h=""
+
+state.cats.forEach(c=>{
+
+h+=`<div class="cat-card" style="background:${c.grad}" onclick="openCat('${c.id}')">
+<span>${c.emoji} ${c.name}</span>
+<span>${counts[c.id]||0}</span>
+</div>`
+
+})
+
+cats.innerHTML=h
+
+}
+
+function renderLinks(){
+
+let list=state.links.filter(l=>l.cat===state.cur)
+
+if(!list.length){
+links.innerHTML='<div class="empty">Sin links</div>'
+return
+}
+
+let h=""
+
+list.forEach(l=>{
+
+let t=thumb(l.url)
+
+h+=`
+<div class="link">
+
+<a class="thumb" href="${l.url}" target="_blank">
+<img src="${t}" loading="lazy"
+onerror="this.src='https://www.google.com/s2/favicons?domain=${domain(l.url)}&sz=128'">
+</a>
+
+<div class="meta">
+
+<a class="url" href="${l.url}" target="_blank">${domain(l.url)}</a>
+
+${l.note?`<div class="note">${l.note}</div>`:""}
+
+<div class="time">${ago(l.date)}</div>
+
+<div class="actions">
+
+<a class="btn wa"
+href="https://wa.me/?text=${encodeURIComponent(l.url)}"
+target="_blank">WhatsApp</a>
+
+<button class="btn del"
+onclick="removeLink(${l.id})">Eliminar</button>
+
+</div>
+
+</div>
+
+</div>
+`
+
+})
+
+links.innerHTML=h
+
+}
+
+function openCat(id){
+state.cur=id
+state.prefCat=id
+home.classList.remove("active")
+detail.classList.add("active")
+renderLinks()
+}
+
+function goHome(){
+state.cur=null
+state.prefCat=null
+detail.classList.remove("active")
+home.classList.add("active")
+}
+
+function openAdd(){
+
+let opts=state.cats.map(c=>`<option value="${c.id}" ${state.prefCat===c.id?"selected":""}>${c.emoji} ${c.name}</option>`).join("")
+
+sheet.style.display="block"
+
+sheet.innerHTML=`
+<div class="sheet-bg" onclick="closeSheet()">
+<div class="sheet" onclick="event.stopPropagation()">
+
+<input id="url" class="input" placeholder="Pega un link">
+
+<input id="note" class="input" placeholder="Nota (opcional)">
+
+<select id="cat" class="select">${opts}</select>
+
+<button class="save" onclick="add()">Guardar</button>
+
+<hr style="margin:16px 0">
+
+<div style="font-weight:600;margin-bottom:8px">Nueva categoría</div>
+
+<input id="newcat" class="input" placeholder="Nombre categoría">
+
+<div class="icon-picker" id="iconpicker"></div>
+
+<button class="save" onclick="addCat()">Crear categoría</button>
+
+</div>
+</div>`
+
+renderIconPicker()
+
+}
+
+function renderIconPicker(){
+
+let h=""
+
+ICONS.forEach(i=>{
+h+=`<div class="icon" onclick="pickIcon(this,'${i}')">${i}</div>`
+})
+
+iconpicker.innerHTML=h
+
+}
+
+let pickedIcon=null
+
+function pickIcon(el,i){
+
+document.querySelectorAll(".icon").forEach(e=>e.classList.remove("sel"))
+
+el.classList.add("sel")
+
+pickedIcon=i
+
+}
+
+function closeSheet(){
+sheet.style.display="none"
+}
+
+function add(){
+
+let url=document.getElementById("url").value.trim()
+let note=document.getElementById("note").value.trim()
+let cat=document.getElementById("cat").value
+
+if(!url) return
+
+if(!/^https?:\/\//i.test(url)) url="https://"+url
+
+state.links.unshift({
+id:Date.now(),
+url:url,
+note:note,
+cat:cat,
+date:Date.now()
+})
+
+save(SK_LINKS,state.links)
+
+closeSheet()
+
+renderCats()
+
+if(state.cur===cat) renderLinks()
+
+}
+
+function addCat(){
+
+let name=document.getElementById("newcat").value.trim()
+
+if(!name || !pickedIcon) return
+
+let id="c"+Date.now()
+
+let grad="linear-gradient(135deg,#a18cd1,#fbc2eb)"
+
+state.cats.push({id,name,emoji:pickedIcon,grad})
+
+save(SK_CATS,state.cats)
+
+renderCats()
+
+alert("Categoría creada")
+
+}
+
+function removeLink(id){
+
+state.links=state.links.filter(l=>l.id!==id)
+
+save(SK_LINKS,state.links)
+
+renderCats()
+
+renderLinks()
+
+}
+
+renderCats()
+
+</script>
+</body>
+</html>
