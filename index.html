@@ -3,272 +3,143 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LinkVault</title>
+<title>LinkVault PRO</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-
-body{
-font-family:Inter,system-ui;
-background:linear-gradient(180deg,#f8f9fb,#eef1f5);
-color:#1C1C1E
-}
-
-.view{display:none;flex-direction:column;min-height:100vh}
-.view.active{display:flex}
-
-.safe{height:env(safe-area-inset-top,20px)}
+body{font-family:Inter;background:#f4f6fb;color:#111}
 
 /* HEADER */
-.header{
-padding:20px 20px 0;
-}
-.header h1{
-font-size:28px;
-font-weight:700;
-}
-.header p{
-color:#8E8E93;
-margin-top:6px;
-}
+.header{padding:20px}
+.header h1{font-size:26px}
+.header p{color:#777}
 
 /* GRID */
 .cat-scroll{
-flex:1;
 padding:20px;
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:14px;
-overflow:auto;
+gap:12px;
 }
 
-/* CARD STYLE */
+/* CARD */
 .cat-card{
-border-radius:22px;
-padding:18px;
-color:#1C1C1E;
-font-weight:600;
+border-radius:18px;
+padding:16px;
+height:120px;
 display:flex;
 flex-direction:column;
 justify-content:space-between;
-cursor:pointer;
-height:120px;
 position:relative;
-box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+cursor:pointer;
+color:#000;
 }
 
+/* BADGE */
 .badge{
 position:absolute;
-top:10px;
-right:10px;
-background:#3b82f6;
-color:white;
-font-size:12px;
+top:8px;right:8px;
+background:#007AFF;
+color:#fff;
+font-size:11px;
 padding:4px 8px;
-border-radius:999px;
+border-radius:10px;
+}
+
+/* DELETE ICON */
+.delcat{
+position:absolute;
+bottom:8px;
+right:8px;
+background:none;
+border:none;
+color:#0006;
+font-size:14px;
 }
 
 /* LINKS */
-.detail-scroll{
-flex:1;
-padding:14px 16px 120px;
-overflow:auto;
-display:grid;
-grid-template-columns:1fr;
-gap:14px;
-}
-
 .link{
 background:#fff;
-border-radius:14px;
-overflow:hidden;
-box-shadow:0 2px 10px rgba(0,0,0,0.08);
-}
-
-.thumb{
-width:100%;
-aspect-ratio:16/9;
-background:#eee;
-display:block;
-}
-
-.thumb img{
-width:100%;
-height:100%;
-object-fit:cover;
-display:block;
-}
-
-.meta{padding:10px 12px}
-
-.url{
-font-weight:600;
-font-size:14px;
-color:#1C1C1E;
-text-decoration:none;
-}
-
-.note{
-font-size:12px;
-color:#8E8E93;
-margin-top:2px;
-}
-
-.time{
-font-size:11px;
-color:#C7C7CC;
-margin-top:4px;
-}
-
-.actions{
-display:flex;
-gap:8px;
-margin-top:8px;
-}
-
-.btn{
-padding:6px 10px;
-border-radius:8px;
-border:none;
-font-size:12px;
+margin:10px;
+border-radius:12px;
+padding:10px;
 cursor:pointer;
 }
 
-.wa{background:#25D366;color:white}
-.del{background:#FF3B30;color:white}
+/* SELECTED */
+.sel{
+background:#d0e7ff !important;
+}
 
 /* FAB */
 .fab{
 position:fixed;
-right:24px;
-bottom:28px;
-width:60px;
-height:60px;
+right:20px;
+width:55px;height:55px;
 border-radius:50%;
-background:#007AFF;
+border:none;
 color:#fff;
-border:none;
-font-size:30px;
+font-size:26px;
+}
+.add{bottom:30px;background:#007AFF}
+.cat{bottom:95px;background:#34C759}
+
+/* VIEW BUTTONS */
+.topbar{
+padding:10px;
 display:flex;
-align-items:center;
-justify-content:center;
-box-shadow:0 6px 20px rgba(0,122,255,.35);
-cursor:pointer;
+gap:8px;
+flex-wrap:wrap;
 }
 
-/* SHEET */
-.sheet-bg{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.4);
-display:flex;
-align-items:flex-end;
-}
-
-.sheet{
-background:#fff;
-width:100%;
-border-radius:22px 22px 0 0;
-padding:22px 20px 40px;
-}
-
-.input,.select{
-width:100%;
-padding:14px;
-border-radius:12px;
-border:none;
-background:#F2F2F7;
-margin-bottom:10px;
-font-size:15px;
-}
-
-.save{
-width:100%;
-padding:16px;
-border:none;
-border-radius:14px;
-background:#007AFF;
-color:#fff;
-font-weight:700;
-font-size:16px;
-margin-top:6px;
-}
-
-.back{
-padding:14px 20px;
-font-weight:600;
-color:#007AFF;
-cursor:pointer;
-}
-
-.empty{
-padding:60px 20px;
-text-align:center;
-color:#C7C7CC;
-}
-
+/* ICON PICKER */
 .icon-picker{
 display:grid;
 grid-template-columns:repeat(6,1fr);
 gap:8px;
-margin-bottom:10px;
+margin-top:10px;
 }
-
 .icon{
-font-size:22px;
-background:#F2F2F7;
-border-radius:8px;
-padding:8px;
+padding:10px;
+background:#eee;
 text-align:center;
+border-radius:8px;
 cursor:pointer;
 }
+.icon.sel{background:#007AFF;color:#fff}
 
-.icon.sel{
-background:#007AFF;
-color:#fff;
-}
 </style>
 </head>
 
 <body>
 
-<div id="home" class="view active">
-<div class="safe"></div>
-
 <div class="header">
 <h1>Hello 👋</h1>
-<p>What do you want to explore today?</p>
+<p>Your smart link manager</p>
 </div>
 
-<div class="cat-scroll" id="cats"></div>
-
-<button class="fab" onclick="openAdd()">＋</button>
+<div class="topbar">
+<button onclick="setView('big')">Big</button>
+<button onclick="setView('small')">Small</button>
+<button onclick="setView('list')">List</button>
+<button onclick="deleteSelected()">Delete Selected</button>
+<button onclick="clearLinks()">Delete All</button>
+<button onclick="goBack()">⬅ Back</button>
 </div>
 
-<div id="detail" class="view">
-<div class="safe"></div>
-<div class="back" onclick="goHome()">← Categories</div>
-<div class="detail-scroll" id="links"></div>
-<button class="fab" onclick="openAdd()">＋</button>
-</div>
+<div id="cats" class="cat-scroll"></div>
+<div id="links"></div>
 
-<div id="sheet" style="display:none"></div>
+<button class="fab add" onclick="openAdd()">＋</button>
+<button class="fab cat" onclick="openAddCategory()">📁</button>
+
+<div id="sheet"></div>
 
 <script>
 
-const DEFAULT_CATS=[
-{id:"music",name:"Music",emoji:"🎵",grad:"linear-gradient(135deg,#a18cd1,#fbc2eb)"},
-{id:"videos",name:"Videos",emoji:"🎬",grad:"linear-gradient(135deg,#89f7fe,#66a6ff)"},
-{id:"recipes",name:"Recipes",emoji:"🍳",grad:"linear-gradient(135deg,#cfd9df,#e2ebf0)"},
-{id:"sports",name:"Sports",emoji:"⚽",grad:"linear-gradient(135deg,#fbc2eb,#a6c1ee)"},
-{id:"ideas",name:"Ideas",emoji:"💡",grad:"linear-gradient(135deg,#fddb92,#d1fdff)"},
-{id:"travel",name:"Travel",emoji:"✈️",grad:"linear-gradient(135deg,#a1c4fd,#c2e9fb)"},
-{id:"misc",name:"Misc",emoji:"📌",grad:"linear-gradient(135deg,#f6d365,#fda085)"}
-]
-
-const ICONS=["🎵","🎬","🍳","⚽","💡","✈️","📚","💻","🎮","🎧","📸","⭐","🧠","🏠"]
+const ICONS=["🎵","🎬","🍳","⚽","💡","✈️","📚","💻","🎮","🎧","📸","⭐","🧠","🏠","🚗","🛍️","🍔","🎨","📱","🧳","🏋️","🎤","📺","📰","💰","🧪","🌍","🐶","🌟","🔥"]
 
 const SK_LINKS="lv_links"
 const SK_CATS="lv_cats"
@@ -278,32 +149,20 @@ function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 
 let state={
 links:load(SK_LINKS,[]),
-cats:load(SK_CATS,DEFAULT_CATS),
-cur:null,
-prefCat:null
+cats:load(SK_CATS,[]),
+cur:null
 }
 
-function domain(u){
-try{return new URL(u).hostname.replace("www.","")}
-catch{return u}
+if(!state.cats.length){
+state.cats=[
+{id:"music",name:"Music",emoji:"🎵",grad:"linear-gradient(135deg,#a18cd1,#fbc2eb)",parent:null}
+]
 }
 
-function ago(t){
-let m=Math.floor((Date.now()-t)/60000)
-if(m<1)return"now"
-if(m<60)return m+"m"
-let h=Math.floor(m/60)
-if(h<24)return h+"h"
-return Math.floor(h/24)+"d"
-}
+let selected=new Set()
+let viewMode=localStorage.getItem("viewMode")||"big"
 
-function thumb(url){
-let yt=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)
-if(yt) return "https://img.youtube.com/vi/"+yt[1]+"/hqdefault.jpg"
-return "https://api.microlink.io/?url="+encodeURIComponent(url)+"&meta=true&embed=image.url"
-}
-
-/* RENDER CATEGORIES */
+/* RENDER CATS */
 function renderCats(){
 
 let counts={}
@@ -311,74 +170,44 @@ state.links.forEach(l=>counts[l.cat]=(counts[l.cat]||0)+1)
 
 let h=""
 
-state.cats.forEach(c=>{
+state.cats.filter(c=>c.parent===state.cur).forEach(c=>{
 
 h+=`
-<div class="cat-card" 
-     style="background:${c.grad}" 
-     onclick="openCat('${c.id}')">
+<div class="cat-card" style="background:${c.grad}" onclick="openCat('${c.id}')">
 
-<div style="font-size:28px">${c.emoji}</div>
+<div style="font-size:26px">${c.emoji}</div>
 
 <div>
-<div style="font-size:16px;font-weight:700">${c.name}</div>
-<div style="font-size:13px;color:rgba(0,0,0,0.6)">Explore</div>
+<div style="font-weight:700">${c.name}</div>
+<div style="font-size:12px;color:#0007">Explore</div>
 </div>
 
-${counts[c.id]?`
-<div class="badge">${counts[c.id]}</div>
-`:""}
+${counts[c.id]?`<div class="badge">${counts[c.id]}</div>`:""}
+
+<button class="delcat" onclick="deleteCategory('${c.id}',event)">✕</button>
 
 </div>
 `
-
 })
 
 cats.innerHTML=h
 }
 
+/* RENDER LINKS */
 function renderLinks(){
 
 let list=state.links.filter(l=>l.cat===state.cur)
 
-if(!list.length){
-links.innerHTML='<div class="empty">No links</div>'
-return
-}
-
 let h=""
 
 list.forEach(l=>{
-let t=thumb(l.url)
 
 h+=`
-<div class="link">
+<div class="link ${selected.has(l.id)?"sel":""}" onclick="toggleSelect(${l.id})">
 
-<a class="thumb" href="${l.url}" target="_blank">
-<img src="${t}" loading="lazy"
-onerror="this.src='https://www.google.com/s2/favicons?domain=${domain(l.url)}&sz=128'">
-</a>
+${viewMode!=="list"?`<div>${l.url}</div>`:""}
 
-<div class="meta">
-
-<a class="url" href="${l.url}" target="_blank">${domain(l.url)}</a>
-
-${l.note?`<div class="note">${l.note}</div>`:""}
-
-<div class="time">${ago(l.date)}</div>
-
-<div class="actions">
-
-<a class="btn wa"
-href="https://wa.me/?text=${encodeURIComponent(l.url)}"
-target="_blank">WhatsApp</a>
-
-<button class="btn del"
-onclick="removeLink(${l.id})">Delete</button>
-
-</div>
-
-</div>
+${l.note?`<div style="font-size:12px;color:#666">${l.note}</div>`:""}
 
 </div>
 `
@@ -387,79 +216,140 @@ onclick="removeLink(${l.id})">Delete</button>
 links.innerHTML=h
 }
 
+/* NAV */
 function openCat(id){
 state.cur=id
-state.prefCat=id
-home.classList.remove("active")
-detail.classList.add("active")
+renderCats()
 renderLinks()
 }
 
-function goHome(){
-state.cur=null
-state.prefCat=null
-detail.classList.remove("active")
-home.classList.add("active")
+function goBack(){
+let parent = state.cats.find(c=>c.id===state.cur)?.parent || null
+state.cur=parent
+renderCats()
+renderLinks()
 }
 
+/* ADD LINK */
 function openAdd(){
-
-let opts=state.cats.map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join("")
-
-sheet.style.display="block"
-
-sheet.innerHTML=`
-<div class="sheet-bg" onclick="closeSheet()">
-<div class="sheet" onclick="event.stopPropagation()">
-
-<input id="url" class="input" placeholder="Paste a link">
-<input id="note" class="input" placeholder="Note (optional)">
-<select id="cat" class="select">${opts}</select>
-
-<button class="save" onclick="add()">Save</button>
-
-</div>
-</div>`
-}
-
-function closeSheet(){
-sheet.style.display="none"
-}
-
-function add(){
-
-let url=document.getElementById("url").value.trim()
-let note=document.getElementById("note").value.trim()
-let cat=document.getElementById("cat").value
-
-if(!url) return
-
-if(!/^https?:\/\//i.test(url)) url="https://"+url
+let url=prompt("Paste link")
+if(!url)return
 
 state.links.unshift({
 id:Date.now(),
-url:url,
-note:note,
-cat:cat,
-date:Date.now()
+url,
+cat:state.cur
 })
 
 save(SK_LINKS,state.links)
-
-closeSheet()
-
+renderLinks()
 renderCats()
-
-if(state.cur===cat) renderLinks()
 }
 
-function removeLink(id){
+/* CATEGORY UI */
+let pickedIcon=null
 
-state.links=state.links.filter(l=>l.id!==id)
+function openAddCategory(){
 
+sheet.innerHTML=`
+<div style="background:#fff;padding:20px">
+
+<input id="newcat" placeholder="Category name" style="width:100%;padding:10px">
+
+<div class="icon-picker" id="iconpicker"></div>
+
+<button onclick="addCat()">Create</button>
+
+</div>
+`
+
+renderIcons()
+}
+
+function renderIcons(){
+let h=""
+ICONS.forEach(i=>{
+h+=`<div class="icon" onclick="pick(this,'${i}')">${i}</div>`
+})
+iconpicker.innerHTML=h
+}
+
+function pick(el,i){
+document.querySelectorAll(".icon").forEach(e=>e.classList.remove("sel"))
+el.classList.add("sel")
+pickedIcon=i
+}
+
+function addCat(){
+
+let name=document.getElementById("newcat").value.trim()
+if(!name||!pickedIcon)return
+
+state.cats.push({
+id:"c"+Date.now(),
+name,
+emoji:pickedIcon,
+grad:"linear-gradient(135deg,#a1c4fd,#c2e9fb)",
+parent:state.cur
+})
+
+save(SK_CATS,state.cats)
+
+sheet.innerHTML=""
+renderCats()
+}
+
+/* DELETE CAT */
+function deleteCategory(id,e){
+e.stopPropagation()
+
+if(!confirm("Delete category and all content?"))return
+
+state.cats=state.cats.filter(c=>c.id!==id)
+state.links=state.links.filter(l=>l.cat!==id)
+
+save(SK_CATS,state.cats)
 save(SK_LINKS,state.links)
 
 renderCats()
+renderLinks()
+}
+
+/* MULTISELECT */
+function toggleSelect(id){
+if(selected.has(id))selected.delete(id)
+else selected.add(id)
+renderLinks()
+}
+
+function deleteSelected(){
+if(!confirm("Delete selected links?"))return
+
+state.links=state.links.filter(l=>!selected.has(l.id))
+selected.clear()
+
+save(SK_LINKS,state.links)
+
+renderLinks()
+renderCats()
+}
+
+/* DELETE ALL */
+function clearLinks(){
+if(!confirm("Delete ALL links?"))return
+
+state.links=state.links.filter(l=>l.cat!==state.cur)
+
+save(SK_LINKS,state.links)
+
+renderLinks()
+renderCats()
+}
+
+/* VIEW MODE */
+function setView(v){
+viewMode=v
+localStorage.setItem("viewMode",v)
 renderLinks()
 }
 
