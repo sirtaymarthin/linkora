@@ -262,13 +262,13 @@ onclick="openAddCategory()">📁</button>
 <script>
 
 const DEFAULT_CATS=[
-{id:"music",name:"Music",emoji:"🎵",grad:"linear-gradient(135deg,#a18cd1,#fbc2eb)"},
-{id:"videos",name:"Videos",emoji:"🎬",grad:"linear-gradient(135deg,#89f7fe,#66a6ff)"},
-{id:"recipes",name:"Recipes",emoji:"🍳",grad:"linear-gradient(135deg,#cfd9df,#e2ebf0)"},
-{id:"sports",name:"Sports",emoji:"⚽",grad:"linear-gradient(135deg,#fbc2eb,#a6c1ee)"},
-{id:"ideas",name:"Ideas",emoji:"💡",grad:"linear-gradient(135deg,#fddb92,#d1fdff)"},
-{id:"travel",name:"Travel",emoji:"✈️",grad:"linear-gradient(135deg,#a1c4fd,#c2e9fb)"},
-{id:"misc",name:"Exams",emoji:"📚",grad:"linear-gradient(135deg,#f6d365,#fda085)"}
+{id:"music",name:"Music",emoji:"🎵",grad:"linear-gradient(135deg,#a18cd1,#fbc2eb)",parent: null},
+{id:"videos",name:"Videos",emoji:"🎬",grad:"linear-gradient(135deg,#89f7fe,#66a6ff)",parent: null},
+{id:"recipes",name:"Recipes",emoji:"🍳",grad:"linear-gradient(135deg,#cfd9df,#e2ebf0)",parent: null},
+{id:"sports",name:"Sports",emoji:"⚽",grad:"linear-gradient(135deg,#fbc2eb,#a6c1ee)",parent: null},
+{id:"ideas",name:"Ideas",emoji:"💡",grad:"linear-gradient(135deg,#fddb92,#d1fdff)",parent: null},
+{id:"travel",name:"Travel",emoji:"✈️",grad:"linear-gradient(135deg,#a1c4fd,#c2e9fb)",parent: null},
+{id:"misc",name:"Exams",emoji:"📚",grad:"linear-gradient(135deg,#f6d365,#fda085)",parent: null}
 ]
 
 const ICONS=[
@@ -318,7 +318,7 @@ state.links.forEach(l=>counts[l.cat]=(counts[l.cat]||0)+1)
 
 let h=""
 
-state.cats.forEach(c=>{
+state.cats.filter(c=>c.parent===state.cur).forEach(c=>{
 
 h+=`
 <div class="cat-card" 
@@ -410,12 +410,29 @@ links.innerHTML=h
 function openCat(id){
 state.cur=id
 state.prefCat=id
+state.cur=id
+state.prefCat=id
+
+renderCats()
+
+let hasSub = state.cats.some(c=>c.parent===id)
+
+if(!hasSub){
 home.classList.remove("active")
 detail.classList.add("active")
 renderLinks()
 }
+}
 
 function goHome(){
+let parent = state.cats.find(c=>c.id===state.cur)?.parent
+
+if(parent!==undefined){
+state.cur=parent
+renderCats()
+return
+}
+
 state.cur=null
 state.prefCat=null
 detail.classList.remove("active")
@@ -495,7 +512,8 @@ state.cats.push({
 id:"c"+Date.now(),
 name:name,
 emoji:pickedIcon,
-grad:"linear-gradient(135deg,#a1c4fd,#c2e9fb)"
+grad:"linear-gradient(135deg,#a1c4fd,#c2e9fb)",
+parent:state.cur
 })
 
 save(SK_CATS,state.cats)
@@ -553,6 +571,8 @@ if(state.cur===cat) renderLinks()
 }
 
 function removeLink(id){
+
+if(!confirm("Delete this link?")) return
 
 state.links=state.links.filter(l=>l.id!==id)
 
