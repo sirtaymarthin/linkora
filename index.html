@@ -1,33 +1,78 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LinkVault</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Inter,system-ui;background:#F2F2F7;color:#1C1C1E}
+
+body{
+font-family:Inter,system-ui;
+background:linear-gradient(180deg,#f8f9fb,#eef1f5);
+color:#1C1C1E
+}
 
 .view{display:none;flex-direction:column;min-height:100vh}
 .view.active{display:flex}
 
 .safe{height:env(safe-area-inset-top,20px)}
 
-.cat-scroll{flex:1;padding:20px 20px 120px;overflow:auto}
-
-.cat-card{
-border-radius:20px;
-padding:20px;
-margin-bottom:12px;
-color:#fff;
+/* HEADER */
+.header{
+padding:20px 20px 0;
+}
+.header h1{
+font-size:28px;
 font-weight:700;
-display:flex;
-justify-content:space-between;
-align-items:center;
-cursor:pointer;
+}
+.header p{
+color:#8E8E93;
+margin-top:6px;
 }
 
+/* GRID */
+.cat-scroll{
+flex:1;
+padding:20px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:14px;
+overflow:auto;
+}
+
+/* CARD STYLE */
+.cat-card{
+border-radius:22px;
+padding:18px;
+color:#1C1C1E;
+font-weight:600;
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+cursor:pointer;
+height:120px;
+position:relative;
+background: rgba(255,255,255,0.7);
+backdrop-filter: blur(10px);
+box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+.badge{
+position:absolute;
+top:10px;
+right:10px;
+background:#3b82f6;
+color:white;
+font-size:12px;
+padding:4px 8px;
+border-radius:999px;
+}
+
+/* LINKS */
 .detail-scroll{
 flex:1;
 padding:14px 16px 120px;
@@ -96,6 +141,7 @@ cursor:pointer;
 .wa{background:#25D366;color:white}
 .del{background:#FF3B30;color:white}
 
+/* FAB */
 .fab{
 position:fixed;
 right:24px;
@@ -114,6 +160,7 @@ box-shadow:0 6px 20px rgba(0,122,255,.35);
 cursor:pointer;
 }
 
+/* SHEET */
 .sheet-bg{
 position:fixed;
 inset:0;
@@ -186,17 +233,25 @@ color:#fff;
 }
 </style>
 </head>
+
 <body>
 
 <div id="home" class="view active">
 <div class="safe"></div>
+
+<div class="header">
+<h1>Hello 👋</h1>
+<p>What do you want to explore today?</p>
+</div>
+
 <div class="cat-scroll" id="cats"></div>
+
 <button class="fab" onclick="openAdd()">＋</button>
 </div>
 
 <div id="detail" class="view">
 <div class="safe"></div>
-<div class="back" onclick="goHome()">← Categorías</div>
+<div class="back" onclick="goHome()">← Categories</div>
 <div class="detail-scroll" id="links"></div>
 <button class="fab" onclick="openAdd()">＋</button>
 </div>
@@ -206,13 +261,13 @@ color:#fff;
 <script>
 
 const DEFAULT_CATS=[
-{id:"musica",name:"Música",emoji:"🎵",grad:"linear-gradient(135deg,#FF6B6B,#FF8E53)"},
-{id:"videos",name:"Videos",emoji:"🎬",grad:"linear-gradient(135deg,#4ECDC4,#44A8F0)"},
-{id:"recetas",name:"Recetas",emoji:"🍳",grad:"linear-gradient(135deg,#45B649,#DCE35B)"},
-{id:"deporte",name:"Deporte",emoji:"⚽",grad:"linear-gradient(135deg,#667EEA,#764BA2)"},
-{id:"ideas",name:"Ideas",emoji:"💡",grad:"linear-gradient(135deg,#f093fb,#f5576c)"},
-{id:"viajes",name:"Viajes",emoji:"✈️",grad:"linear-gradient(135deg,#4facfe,#00f2fe)"},
-{id:"varios",name:"Varios",emoji:"📌",grad:"linear-gradient(135deg,#F7971E,#FFD200)"}
+{id:"music",name:"Music",emoji:"🎵"},
+{id:"videos",name:"Videos",emoji:"🎬"},
+{id:"recipes",name:"Recipes",emoji:"🍳"},
+{id:"sports",name:"Sports",emoji:"⚽"},
+{id:"ideas",name:"Ideas",emoji:"💡"},
+{id:"travel",name:"Travel",emoji:"✈️"},
+{id:"misc",name:"Misc",emoji:"📌"}
 ]
 
 const ICONS=["🎵","🎬","🍳","⚽","💡","✈️","📚","💻","🎮","🎧","📸","⭐","🧠","🏠"]
@@ -237,7 +292,7 @@ catch{return u}
 
 function ago(t){
 let m=Math.floor((Date.now()-t)/60000)
-if(m<1)return"ahora"
+if(m<1)return"now"
 if(m<60)return m+"m"
 let h=Math.floor(m/60)
 if(h<24)return h+"h"
@@ -245,33 +300,37 @@ return Math.floor(h/24)+"d"
 }
 
 function thumb(url){
-
 let yt=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)
 if(yt) return "https://img.youtube.com/vi/"+yt[1]+"/hqdefault.jpg"
-
 return "https://api.microlink.io/?url="+encodeURIComponent(url)+"&meta=true&embed=image.url"
-
 }
 
+/* RENDER CATEGORIES */
 function renderCats(){
 
 let counts={}
-
 state.links.forEach(l=>counts[l.cat]=(counts[l.cat]||0)+1)
 
 let h=""
 
 state.cats.forEach(c=>{
+h+=`
+<div class="cat-card" onclick="openCat('${c.id}')">
 
-h+=`<div class="cat-card" style="background:${c.grad}" onclick="openCat('${c.id}')">
-<span>${c.emoji} ${c.name}</span>
-<span>${counts[c.id]||0}</span>
-</div>`
+<div style="font-size:28px">${c.emoji}</div>
 
+<div>
+<div style="font-size:16px;font-weight:700">${c.name}</div>
+<div style="font-size:13px;color:#8E8E93">Explore</div>
+</div>
+
+${counts[c.id]?`<div class="badge">${counts[c.id]}</div>`:""}
+
+</div>
+`
 })
 
 cats.innerHTML=h
-
 }
 
 function renderLinks(){
@@ -279,14 +338,13 @@ function renderLinks(){
 let list=state.links.filter(l=>l.cat===state.cur)
 
 if(!list.length){
-links.innerHTML='<div class="empty">Sin links</div>'
+links.innerHTML='<div class="empty">No links</div>'
 return
 }
 
 let h=""
 
 list.forEach(l=>{
-
 let t=thumb(l.url)
 
 h+=`
@@ -312,7 +370,7 @@ href="https://wa.me/?text=${encodeURIComponent(l.url)}"
 target="_blank">WhatsApp</a>
 
 <button class="btn del"
-onclick="removeLink(${l.id})">Eliminar</button>
+onclick="removeLink(${l.id})">Delete</button>
 
 </div>
 
@@ -320,11 +378,9 @@ onclick="removeLink(${l.id})">Eliminar</button>
 
 </div>
 `
-
 })
 
 links.innerHTML=h
-
 }
 
 function openCat(id){
@@ -344,7 +400,7 @@ home.classList.add("active")
 
 function openAdd(){
 
-let opts=state.cats.map(c=>`<option value="${c.id}" ${state.prefCat===c.id?"selected":""}>${c.emoji} ${c.name}</option>`).join("")
+let opts=state.cats.map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join("")
 
 sheet.style.display="block"
 
@@ -352,53 +408,14 @@ sheet.innerHTML=`
 <div class="sheet-bg" onclick="closeSheet()">
 <div class="sheet" onclick="event.stopPropagation()">
 
-<input id="url" class="input" placeholder="Pega un link">
-
-<input id="note" class="input" placeholder="Nota (opcional)">
-
+<input id="url" class="input" placeholder="Paste a link">
+<input id="note" class="input" placeholder="Note (optional)">
 <select id="cat" class="select">${opts}</select>
 
-<button class="save" onclick="add()">Guardar</button>
-
-<hr style="margin:16px 0">
-
-<div style="font-weight:600;margin-bottom:8px">Nueva categoría</div>
-
-<input id="newcat" class="input" placeholder="Nombre categoría">
-
-<div class="icon-picker" id="iconpicker"></div>
-
-<button class="save" onclick="addCat()">Crear categoría</button>
+<button class="save" onclick="add()">Save</button>
 
 </div>
 </div>`
-
-renderIconPicker()
-
-}
-
-function renderIconPicker(){
-
-let h=""
-
-ICONS.forEach(i=>{
-h+=`<div class="icon" onclick="pickIcon(this,'${i}')">${i}</div>`
-})
-
-iconpicker.innerHTML=h
-
-}
-
-let pickedIcon=null
-
-function pickIcon(el,i){
-
-document.querySelectorAll(".icon").forEach(e=>e.classList.remove("sel"))
-
-el.classList.add("sel")
-
-pickedIcon=i
-
 }
 
 function closeSheet(){
@@ -430,27 +447,6 @@ closeSheet()
 renderCats()
 
 if(state.cur===cat) renderLinks()
-
-}
-
-function addCat(){
-
-let name=document.getElementById("newcat").value.trim()
-
-if(!name || !pickedIcon) return
-
-let id="c"+Date.now()
-
-let grad="linear-gradient(135deg,#a18cd1,#fbc2eb)"
-
-state.cats.push({id,name,emoji:pickedIcon,grad})
-
-save(SK_CATS,state.cats)
-
-renderCats()
-
-alert("Categoría creada")
-
 }
 
 function removeLink(id){
@@ -460,13 +456,12 @@ state.links=state.links.filter(l=>l.id!==id)
 save(SK_LINKS,state.links)
 
 renderCats()
-
 renderLinks()
-
 }
 
 renderCats()
 
 </script>
+
 </body>
 </html>
