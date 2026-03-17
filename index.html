@@ -56,9 +56,7 @@ justify-content:space-between;
 cursor:pointer;
 height:120px;
 position:relative;
-background: rgba(255,255,255,0.7);
-backdrop-filter: blur(10px);
-box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
 .badge{
@@ -261,13 +259,13 @@ color:#fff;
 <script>
 
 const DEFAULT_CATS=[
-{id:"music",name:"Music",emoji:"🎵"},
-{id:"videos",name:"Videos",emoji:"🎬"},
-{id:"recipes",name:"Recipes",emoji:"🍳"},
-{id:"sports",name:"Sports",emoji:"⚽"},
-{id:"ideas",name:"Ideas",emoji:"💡"},
-{id:"travel",name:"Travel",emoji:"✈️"},
-{id:"misc",name:"Misc",emoji:"📌"}
+{id:"music",name:"Music",emoji:"🎵",grad:"linear-gradient(135deg,#a18cd1,#fbc2eb)"},
+{id:"videos",name:"Videos",emoji:"🎬",grad:"linear-gradient(135deg,#89f7fe,#66a6ff)"},
+{id:"recipes",name:"Recipes",emoji:"🍳",grad:"linear-gradient(135deg,#cfd9df,#e2ebf0)"},
+{id:"sports",name:"Sports",emoji:"⚽",grad:"linear-gradient(135deg,#fbc2eb,#a6c1ee)"},
+{id:"ideas",name:"Ideas",emoji:"💡",grad:"linear-gradient(135deg,#fddb92,#d1fdff)"},
+{id:"travel",name:"Travel",emoji:"✈️",grad:"linear-gradient(135deg,#a1c4fd,#c2e9fb)"},
+{id:"misc",name:"Misc",emoji:"📌",grad:"linear-gradient(135deg,#f6d365,#fda085)"}
 ]
 
 const ICONS=["🎵","🎬","🍳","⚽","💡","✈️","📚","💻","🎮","🎧","📸","⭐","🧠","🏠"]
@@ -314,20 +312,26 @@ state.links.forEach(l=>counts[l.cat]=(counts[l.cat]||0)+1)
 let h=""
 
 state.cats.forEach(c=>{
+
 h+=`
-<div class="cat-card" onclick="openCat('${c.id}')">
+<div class="cat-card" 
+     style="background:${c.grad}" 
+     onclick="openCat('${c.id}')">
 
 <div style="font-size:28px">${c.emoji}</div>
 
 <div>
 <div style="font-size:16px;font-weight:700">${c.name}</div>
-<div style="font-size:13px;color:#8E8E93">Explore</div>
+<div style="font-size:13px;color:rgba(0,0,0,0.6)">Explore</div>
 </div>
 
-${counts[c.id]?`<div class="badge">${counts[c.id]}</div>`:""}
+${counts[c.id]?`
+<div class="badge">${counts[c.id]}</div>
+`:""}
 
 </div>
 `
+
 })
 
 cats.innerHTML=h
