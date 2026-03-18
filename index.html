@@ -531,5 +531,12 @@
         // Mismo Inicio
         render();
     </script>
+    <script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(r=>{
+    r.forEach(reg=>reg.unregister())
+  }).then(()=>window.location.reload())
+}
+</script>
 </body>
 </html>
