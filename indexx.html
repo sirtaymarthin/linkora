@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkVault Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{
+            font-family:Inter,system-ui;
+            background:linear-gradient(180deg,#f8f9fb,#eef1f5);
+            color:#1C1C1E;
+            min-height: 100vh;
+        }
+        .view{display:none;flex-direction:column;min-height:100vh}
+        .view.active{display:flex}
+        .safe{height:env(safe-area-inset-top,20px)}
+
+        /* HEADER */
+        .header{padding:20px 20px 0}
+        .header h1{font-size:28px;font-weight:700}
+        .header p{color:#8E8E93;margin-top:6px}
+
+        /* GRID & LIST */
+        .cat-scroll, .detail-scroll{
+            flex:1;
+            padding:20px;
+            display:grid;
+            gap:14px;
+            overflow:auto;
+        }
+        .cat-scroll{grid-template-columns:1fr 1fr}
+        .detail-scroll{grid-template-columns:1fr; padding-bottom: 120px}
+
+        /* CARDS */
+        .cat-card{
+            border-radius:22px;
+            padding:18px;
+            color:#1C1C1E;
+            font-weight:600;
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+            cursor:pointer;
+            height:120px;
+            position:relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+        .cat-card:active{transform: scale(0.95)}
+
+        .badge{
+            position:absolute;
+            top:10px;
+            right:10px;
+            background:#3b82f6;
+            color:white;
+            font-size:12px;
+            padding:4px 8px;
+            border-radius:999px;
+        }
+
+        /* LINKS */
+        .link{
+            background:#fff;
+            border-radius:14px;
+            overflow:hidden;
+            box-shadow:0 2px 10px rgba(0,0,0,0.08);
+        }
+        .thumb{
+            width:100%;
+            aspect-ratio:16/9;
+            background:#eee;
+            display:block;
+        }
+        .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+        .meta{padding:10px 12px}
+        .url{font-weight:600;font-size:14px;color:#1C1C1E;text-decoration:none}
+        .note{font-size:12px;color:#8E8E93;margin-top:2px}
+        .time{font-size:11px;color:#C7C7CC;margin-top:4px}
+        .actions{display:flex;gap:8px;margin-top:8px}
+        .btn{padding:6px 10px;border-radius:8px;border:none;font-size:12px;cursor:pointer}
+        .wa{background:#25D366;color:white}
+        .del{background:#FF3B30;color:white}
+
+        /* UI ELEMENTS */
+        .fab{
+            position:fixed;
+            right:24px;
+            bottom:28px;
+            width:60px;
+            height:60px;
+            border-radius:50%;
+            background:#007AFF;
+            color:#fff;
+            border:none;
+            font-size:30px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            box-shadow:0 6px 20px rgba(0,122,255,.35);
+            cursor:pointer;
+            z-index: 10;
+        }
+        .back{padding:14px 20px;font-weight:600;color:#007AFF;cursor:pointer;display: flex;align-items: center;gap: 5px}
+        .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;z-index:100}
+        .sheet{background:#fff;width:100%;border-radius:22px 22px 0 0;padding:22px 20px 40px}
+        .input,.select{width:100%;padding:14px;border-radius:12px;border:none;background:#F2F2F7;margin-bottom:10px;font-size:15px}
+        .save{width:100%;padding:16px;border:none;border-radius:14px;background:#007AFF;color:#fff;font-weight:700;font-size:16px}
+        .icon-picker{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px;max-height: 150px;overflow: auto;padding: 5px}
+        .icon{font-size:22px;background:#F2F2F7;border-radius:8px;padding:8px;text-align:center;cursor:pointer}
+        .icon.sel{background:#007AFF;color:#fff}
+        .empty{padding:60px 20px;text-align:center;color:#C7C7CC}
+    </style>
+</head>
+<body>
+
+    <div id="home" class="view active">
+        <div class="safe"></div>
+        <div class="header">
+            <h1 id="title-text">Hello 👋</h1>
+            <p id="subtitle-text">What do you want to explore today?</p>
+        </div>
+        <div id="back-nav" class="back" style="display:none" onclick="goHome()">← Back</div>
+        
+        <div class="cat-scroll" id="cats"></div>
+        <div class="detail-scroll" id="links" style="display:none"></div>
+    </div>
+
+    <button class="fab" onclick="openAdd()">＋</button>
+    <button class="fab" style="bottom:100px;background:#34C759" onclick="openAddCategory()">📁</button>
+
+    <div id="sheet" style="display:none"></div>
+
+    <script>
+        const DEFAULT_CATS=[
+            {id:"music",name:"Music",emoji:"🎵",grad:"linear-gradient(135deg,#a18cd1,#fbc2eb)",parent: null},
+            {id:"videos",name:"Videos",emoji:"🎬",grad:"linear-gradient(135deg,#89f7fe,#66a6ff)",parent: null},
+            {id:"recipes",name:"Recipes",emoji:"🍳",grad:"linear-gradient(135deg,#cfd9df,#e2ebf0)",parent: null},
+            {id:"sports",name:"Sports",emoji:"⚽",grad:"linear-gradient(135deg,#fbc2eb,#a6c1ee)",parent: null},
+            {id:"ideas",name:"Ideas",emoji:"💡",grad:"linear-gradient(135deg,#fddb92,#d1fdff)",parent: null},
+            {id:"travel",name:"Travel",emoji:"✈️",grad:"linear-gradient(135deg,#a1c4fd,#c2e9fb)",parent: null}
+        ];
+
+        const ICONS=["🎵","🎬","🍳","⚽","💡","✈️","📚","💻","🎮","🎧","📸","⭐","🧠","🏠","🚗","🛍️","🍔","🎨","📱","🧳","🏋️","🎤","📺","📰","💰","🧪","🌍","🐶","🌟","🔥"];
+        const SK_LINKS="lv_links", SK_CATS="lv_cats";
+
+        let state = {
+            links: JSON.parse(localStorage.getItem(SK_LINKS)) || [],
+            cats: JSON.parse(localStorage.getItem(SK_CATS)) || DEFAULT_CATS,
+            cur: null
+        };
+
+        function saveState(){
+            localStorage.setItem(SK_LINKS, JSON.stringify(state.links));
+            localStorage.setItem(SK_CATS, JSON.stringify(state.cats));
+        }
+
+        function domain(u){ try{return new URL(u).hostname.replace("www.","")}catch{return u} }
+        function ago(t){
+            let m=Math.floor((Date.now()-t)/60000);
+            if(m<1)return "now";
+            if(m<60)return m+"m";
+            let h=Math.floor(m/60);
+            return h<24 ? h+"h" : Math.floor(h/24)+"d";
+        }
+
+        function getThumb(url){
+            let yt=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+            if(yt) return "https://img.youtube.com/vi/"+yt[1]+"/hqdefault.jpg";
+            return "https://api.microlink.io/?url="+encodeURIComponent(url)+"&meta=true&embed=image.url";
+        }
+
+        function render(){
+            const catContainer = document.getElementById("cats");
+            const linkContainer = document.getElementById("links");
+            const backNav = document.getElementById("back-nav");
+            const title = document.getElementById("title-text");
+
+            // Filtrar contenido
+            const subCats = state.cats.filter(c => c.parent === state.cur);
+            const currentLinks = state.links.filter(l => l.cat === state.cur);
+            
+            // UI Navigation
+            backNav.style.display = state.cur ? "flex" : "none";
+            title.innerText = state.cur ? state.cats.find(c=>c.id===state.cur).name : "Hello 👋";
+
+            // Render Cats
+            let counts={};
+            state.links.forEach(l => counts[l.cat] = (counts[l.cat]||0) + 1);
+            
+            catContainer.innerHTML = subCats.map(c => `
+                <div class="cat-card" style="background:${c.grad}" onclick="openCat('${c.id}')">
+                    <div style="font-size:28px">${c.emoji}</div>
+                    <div>
+                        <div style="font-size:16px;font-weight:700">${c.name}</div>
+                        <div style="font-size:13px;color:rgba(0,0,0,0.6)">Explore</div>
+                    </div>
+                    ${counts[c.id] ? `<div class="badge">${counts[c.id]}</div>` : ""}
+                    <button onclick="deleteCategory('${c.id}',event)" style="position:absolute;bottom:10px;right:10px;background:none;border:none;color:#0003;font-size:16px">✕</button>
+                </div>
+            `).join("");
+
+            // Render Links
+            if(state.cur){
+                linkContainer.style.display = "grid";
+                if(currentLinks.length === 0 && subCats.length === 0){
+                    linkContainer.innerHTML = '<div class="empty">No content here yet</div>';
+                } else {
+                    linkContainer.innerHTML = currentLinks.map(l => `
+                        <div class="link">
+                            <a class="thumb" href="${l.url}" target="_blank">
+                                <img src="${getThumb(l.url)}" onerror="this.src='https://www.google.com/s2/favicons?domain=${domain(l.url)}&sz=128'">
+                            </a>
+                            <div class="meta">
+                                <a class="url" href="${l.url}" target="_blank">${domain(l.url)}</a>
+                                ${l.note ? `<div class="note">${l.note}</div>` : ""}
+                                <div class="time">${ago(l.date)}</div>
+                                <div class="actions">
+                                    <a class="btn wa" href="https://wa.me/?text=${encodeURIComponent(l.url)}" target="_blank">WhatsApp</a>
+                                    <button class="btn del" onclick="removeLink(${l.id})">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join("");
+                }
+            } else {
+                linkContainer.style.display = "none";
+            }
+        }
+
+        function openCat(id){ state.cur = id; render(); }
+        
+        function goHome(){
+            if(!state.cur) return;
+            let parent = state.cats.find(c => c.id === state.cur)?.parent;
+            state.cur = parent || null;
+            render();
+        }
+
+        function openAdd(){
+            const opts = state.cats.map(c => `<option value="${c.id}" ${c.id===state.cur?'selected':''}>${c.emoji} ${c.name}</option>`).join("");
+            const sheet = document.getElementById("sheet");
+            sheet.style.display="block";
+            sheet.innerHTML = `
+                <div class="sheet-bg" onclick="closeSheet()">
+                    <div class="sheet" onclick="event.stopPropagation()">
+                        <input id="url" class="input" placeholder="Paste link here...">
+                        <input id="note" class="input" placeholder="Note (optional)">
+                        <select id="cat-sel" class="select">${opts}</select>
+                        <button class="save" onclick="addLink()">Save Link</button>
+                    </div>
+                </div>`;
+        }
+
+        function addLink(){
+            let url = document.getElementById("url").value.trim();
+            if(!url) return;
+            if(!/^https?:\/\//i.test(url)) url = "https://" + url;
+            
+            state.links.unshift({
+                id: Date.now(),
+                url: url,
+                note: document.getElementById("note").value,
+                cat: document.getElementById("cat-sel").value,
+                date: Date.now()
+            });
+            saveState();
+            closeSheet();
+            render();
+        }
+
+        let pickedIcon = "📁";
+        function openAddCategory(){
+            const sheet = document.getElementById("sheet");
+            sheet.style.display="block";
+            sheet.innerHTML = `
+                <div class="sheet-bg" onclick="closeSheet()">
+                    <div class="sheet" onclick="event.stopPropagation()">
+                        <input id="newcat-name" class="input" placeholder="Category Name">
+                        <div class="icon-picker">${ICONS.map(i => `<div class="icon" onclick="pickIcon(this,'${i}')">${i}</div>`).join("")}</div>
+                        <button class="save" onclick="addCategory()">Create Category</button>
+                    </div>
+                </div>`;
+        }
+
+        function pickIcon(el, icon){
+            document.querySelectorAll(".icon").forEach(i => i.classList.remove("sel"));
+            el.classList.add("sel");
+            pickedIcon = icon;
+        }
+
+        function addCategory(){
+            const name = document.getElementById("newcat-name").value.trim();
+            if(!name) return;
+            state.cats.push({
+                id: "c" + Date.now(),
+                name: name,
+                emoji: pickedIcon,
+                grad: "linear-gradient(135deg,#e2ebf0,#cfd9df)",
+                parent: state.cur
+            });
+            saveState();
+            closeSheet();
+            render();
+        }
+
+        function deleteCategory(id, e){
+            e.stopPropagation();
+            if(!confirm("Delete this category and everything inside?")) return;
+            state.cats = state.cats.filter(c => c.id !== id);
+            state.links = state.links.filter(l => l.cat !== id);
+            saveState();
+            render();
+        }
+
+        function removeLink(id){
+            state.links = state.links.filter(l => l.id !== id);
+            saveState();
+            render();
+        }
+
+        function closeSheet(){ document.getElementById("sheet").style.display="none"; }
+
+        // Start
+        render();
+    </script>
+</body>
+</html>
+
