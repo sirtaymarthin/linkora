@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkVault Pro - Cloud Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- RESET Y BASES --- */
+        :root {
+            --bg-color: #F7F9FC;
+            --text-main: #1C1C1E;
+            --text-sub: #8E8E93;
+            --purple: #7B61FF;
+            --orange: #FF9F40;
+            --blue: #36D1DC;
+            --pink: #FF5E78;
+            --white: #FFFFFF;
+            --shadow-soft: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        *{box-sizing:border-box;margin:0;padding:0; -webkit-tap-highlight-color: transparent;}
+        body{
+            font-family:'Inter', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 100px; /* Espacio para la barra inferior */
+        }
+
+        .view{display:none;flex-direction:column;width: 100%;}
+        .view.active{display:flex}
+        .safe{height:env(safe-area-inset-top, 20px)}
+
+        /* --- HEADER ESTILO CLOUD --- */
+        .cloud-header {
+            padding: 30px 24px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .user-info { display: flex; flex-direction: column; gap: 8px; }
+        
+        .avatar-crown {
+            width: 56px; height: 56px;
+            background-color: #E2E2E2; /* Gris de fondo */
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        /* El círculo gris oscuro alrededor de la corona en tu imagen */
+        .avatar-crown::after {
+            content: ''; position: absolute; inset: -3px;
+            border-radius: 50%; border: 3px solid #636366; opacity: 0.1;
+        }
+
+        .welcome-text { font-size: 26px; font-weight: 700; line-height: 1.2; }
+        .welcome-text span { font-weight: 500; display: block; }
+        .sub-welcome { color: var(--text-sub); font-size: 14px; margin-top: 6px; font-weight: 400;}
+
+        .icon-bell {
+            width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; color: #636366; cursor: pointer;
+        }
+
+        /* --- BUSCADOR --- */
+        .search-container { padding: 0 24px 25px; }
+        .search-box {
+            width: 100%; height: 52px;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            display: flex; align-items: center;
+            padding: 0 16px;
+            border: 1px solid #EAEAEA;
+        }
+        .search-box input {
+            flex: 1; border: none; outline: none;
+            background: transparent;
+            font-size: 16px; color: var(--text-main);
+        }
+        .search-box input::placeholder { color: #C7C7CC; }
+        .search-icon { color: var(--purple); font-size: 20px; cursor: pointer; }
+
+        /* --- GRID DE CATEGORIAS (NUEVO ESTILO) --- */
+        .cat-scroll {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding: 0 24px 30px;
+        }
+
+        .cat-card {
+            border-radius: 24px;
+            padding: 24px;
+            color: var(--white);
+            height: 200px; /* Más altas como en la imagen */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .cat-card:active { transform: scale(0.97); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+        .cat-card-top { display: flex; justify-content: space-between; align-items: center; }
+        .folder-icon { font-size: 36px; color: #FFE082; } /* Amarillo carpeta */
+        .dots-menu { font-size: 20px; color: rgba(255,255,255,0.7); cursor: pointer; padding: 5px; }
+
+        .cat-card-bottom { display: flex; flex-direction: column; gap: 4px; }
+        .cat-name { font-size: 18px; font-weight: 700; color: var(--white); }
+        .cat-count { font-size: 14px; color: rgba(255,255,255,0.8); font-weight: 500; }
+        .cat-date { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+
+        /* Colores específicos de la imagen */
+        .card-purple { background: var(--purple); }
+        .card-orange { background: var(--orange); }
+        .card-blue { background: var(--blue); }
+        .card-pink { background: var(--pink); }
+        
+        /* Badge antiguo, adaptado */
+        .badge { display: none; } /* Oculto en este diseño, el número va abajo */
+
+        /* --- SECCION RECIENTES --- */
+        .recent-section { padding: 0 24px 30px; }
+        .recent-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--text-main); }
+        .recent-item {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex; align-items: center; gap: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border: 1px solid #F0F0F0;
+        }
+        .recent-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: #F2F2F7;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: var(--text-sub);
+        }
+        .recent-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        .recent-name { font-size: 15px; font-weight: 600; color: var(--text-main); }
+        .recent-meta { font-size: 12px; color: var(--text-sub); }
+
+        /* --- VISTA DE DETALLES (ENLACES) --- */
+        .detail-scroll { padding: 20px 24px 120px; display: grid; gap: 16px; }
+        .link {
+            background: var(--white); border-radius: 16px; overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid #F0F0F0;
+        }
+        .thumb { width: 100%; aspect-ratio: 16/9; background: #eee; display: block; }
+        .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .meta { padding: 14px 16px; }
+        .url { font-weight: 600; font-size: 15px; color: var(--text-main); text-decoration: none; display: block; margin-bottom: 4px;}
+        .note { font-size: 13px; color: var(--text-sub); margin-top: 4px; line-height: 1.4; }
+        .time { font-size: 11px; color: #C7C7CC; margin-top: 8px; }
+        .actions { display: flex; gap: 10px; margin-top: 12px; }
+        .btn { padding: 8px 14px; border-radius: 8px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s;}
+        .wa { background: #E8F9EE; color: #25D366; } .wa:active { background: #D0F2DC; }
+        .del { background: #FFEBEB; color: #FF3B30; } .del:active { background: #FFD6D6; }
+
+        /* --- NAVEGACION INFERIOR (REEMPLAZA FABS) --- */
+        .nav-bar {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%; height: 85px;
+            background: var(--white);
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 0 10px 15px; /* Padding bottom para safe area */
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
+            border-top: 1px solid #EAEAEA;
+            z-index: 50;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            color: #C7C7CC; cursor: pointer; flex: 1; text-align: center;
+        }
+        .nav-item.active { color: var(--purple); }
+        .nav-icon { font-size: 22px; }
+        .nav-label { font-size: 11px; font-weight: 600; }
+
+        /* Botón central "+" rosa */
+        .nav-add-btn {
+            width: 60px; height: 60px;
+            background: var(--pink);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--white);
+            font-size: 30px;
+            box-shadow: 0 5px 15px rgba(255, 94, 120, 0.4);
+            margin-top: -35px; /* Flota hacia arriba */
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .nav-add-btn:active { transform: scale(0.9) translateY(-35px); }
+
+        /* --- UI ELEMENTS (BOTON VOLVER, MODALES) --- */
+        .back-nav { padding: 10px 24px; font-weight: 600; color: var(--purple); cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; }
+        
+        .sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; z-index: 100; animation: fadeIn 0.3s; }
+        .sheet { background: var(--white); width: 100%; border-radius: 30px 30px 0 0; padding: 30px 24px 40px; animation: slideUp 0.3s; }
+        
+        .input, .select { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid #EAEAEA; background: #FAFAFA; margin-bottom: 12px; font-size: 16px; font-family: inherit;}
+        .input:focus, .select:focus { border-color: var(--purple); background: var(--white); outline: none; }
+        
+        .save { width: 100%; padding: 18px; border: none; border-radius: 16px; background: var(--purple); color: var(--white); font-weight: 700; font-size: 17px; cursor: pointer; box-shadow: 0 5px 15px rgba(123, 97, 255, 0.3); }
+        .save:active { transform: scale(0.98); }
+
+        .icon-picker { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; margin-bottom: 15px; max-height: 160px; overflow-y: auto; padding: 5px; }
+        .icon-item { font-size: 24px; background: #F2F2F7; border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: background 0.2s; }
+        .icon-item.sel { background: var(--purple); color: var(--white); }
+
+        .empty { padding: 80px 24px; text-align: center; color: var(--text-sub); font-size: 15px; line-height: 1.5; }
+
+        /* Animaciones */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="safe"></div>
+
+    <div id="home" class="view active">
+        
+        <div class="cloud-header">
+            <div class="user-info">
+                <div class="avatar-crown">👑</div>
+                <div class="welcome-text">Hello! <span>Linda Smith</span></div>
+                <div id="subtitle-text" class="sub-welcome">Let's manage your cloud storage.</div>
+            </div>
+            <div class="icon-bell">🔔</div>
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" placeholder="Search">
+                <div class="search-icon">🔍</div>
+            </div>
+        </div>
+
+        <div id="back-nav-container" style="display:none">
+            <div class="back-nav" onclick="goHome()">← Back to Categories</div>
+        </div>
+        
+        <div class="cat-scroll" id="cats">
+            </div>
+
+        <div id="recent-uploads-container" class="recent-section">
+            <div class="recent-title">Recent Uploads</div>
+            <div class="recent-item">
+                <div class="recent-icon">☁️</div>
+                <div class="recent-info">
+                    <div class="recent-name">IMG22164.jpg</div>
+                    <div class="recent-meta">4.2MB • Nov 12, 2024</div>
+                </div>
+                <div class="dots-menu" style="color: #C7C7CC">⋮</div>
+            </div>
+        </div>
+
+        <div class="detail-scroll" id="links" style="display:none">
+            </div>
+    </div>
+
+
+<nav class="nav-bar">
+    <div class="nav-item active" onclick="goHome()">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item" onclick="openAddCategory()">
+        <div class="nav-icon">📁</div>
+        <div class="nav-label">New Category</div>
+    </div>
+    
+    <div class="nav-item" onclick="openAdd()">
+        <div class="nav-icon">🔗</div>
+        <div class="nav-label">New Link</div>
+    </div>
+    <div class="nav-item">
+        <div class="nav-icon">👤</div>
+        <div class="nav-label">Profile</div>
+    </div>
+</nav>
+
+
+    <div id="sheet" style="display:none"></div>
+
+
+    <script>
+        const DEFAULT_CATS=[
+            {id:"music",name:"Music",emoji:"🎵",grad:"card-purple",parent: null},
+            {id:"videos",name:"Recipes",emoji:"🍳",grad:"card-orange",parent: null},
+            {id:"recipes",name:"Videos",emoji:"🎬",grad:"card-blue",parent: null},
+            {id:"sports",name:"Documents",emoji:"📚",grad:"card-pink",parent: null},
+            {id:"movies",name:"Sports",emoji:"⚽",grad:"card-pink",parent: null}
+        ];
+
+        // Mismo array de iconos
+        const ICONS=["🎵","🎬","🍳","⚽","💡","✈️","📚","💻","🎮","🎧","📸","⭐","🧠","🏠","🚗","🛍️","🍔","🎨","📱","🧳","🏋️","🎤","📺","📰","💰","🧪","🌍","🐶","🌟","🔥"];
+        const SK_LINKS="lv_links", SK_CATS="lv_cats";
+
+        // Mismo Estado y LocalStorage
+        let state = {
+            links: JSON.parse(localStorage.getItem(SK_LINKS)) || [],
+            cats: JSON.parse(localStorage.getItem(SK_CATS)) || DEFAULT_CATS,
+            cur: null
+        };
+
+        function saveState(){
+            localStorage.setItem(SK_LINKS, JSON.stringify(state.links));
+            localStorage.setItem(SK_CATS, JSON.stringify(state.cats));
+        }
+
+        // Mismas utilidades
+        function domain(u){ try{return new URL(u).hostname.replace("www.","")}catch{return u} }
+        function ago(t){
+            let m=Math.floor((Date.now()-t)/60000);
+            if(m<1)return "now";
+            if(m<60)return m+"m";
+            let h=Math.floor(m/60);
+            return h<24 ? h+"h" : Math.floor(h/24)+"d";
+        }
+
+        function getThumb(url){
+            let yt=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+            if(yt) return "https://img.youtube.com/vi/"+yt[1]+"/hqdefault.jpg";
+            return "https://api.microlink.io/?url="+encodeURIComponent(url)+"&meta=true&embed=image.url";
+        }
+
+
+        // --- FUNCION RENDER ACTUALIZADA CON EL NUEVO DISEÑO ---
+        function render(){
+            const catContainer = document.getElementById("cats");
+            const linkContainer = document.getElementById("links");
+            const backNav = document.getElementById("back-nav-container");
+            const subtitle = document.getElementById("subtitle-text");
+            const recentSection = document.getElementById("recent-uploads-container");
+
+            // Filtrar contenido
+            const subCats = state.cats.filter(c => c.parent === state.cur);
+            const currentLinks = state.links.filter(l => l.cat === state.cur);
+            
+            // UI Navigation: Si estamos dentro de una carpeta
+            if(state.cur){
+                backNav.style.display = "block";
+                recentSection.style.display = "none";
+                const curCat = state.cats.find(c=>c.id===state.cur);
+                subtitle.innerText = "Exploring " + curCat.name;
+                
+                // Cambiar active en nav bar
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            } else {
+                // Home principal
+                backNav.style.display = "none";
+                recentSection.style.display = "block";
+                subtitle.innerText = "Let's manage your cloud storage.";
+                
+                // Active en Home icon
+                document.querySelectorAll('.nav-item')[0].classList.add('active');
+            }
+
+            // Render Cats (NUEVO DISEÑO HTML)
+            let counts={};
+            state.links.forEach(l => counts[l.cat] = (counts[l.cat]||0) + 1);
+            
+            catContainer.innerHTML = subCats.map(c => `
+                <div class="cat-card ${c.grad || 'card-purple'}" onclick="openCat('${c.id}')">
+                    <div class="cat-card-top">
+                        <div class="folder-icon">${c.emoji || '📁'}</div>
+                        <div class="dots-menu" onclick="deleteCategory('${c.id}',event)">✕</div>
+                    </div>
+                    <div class="cat-card-bottom">
+                        <div class="cat-name">${c.name}</div>
+                        <div class="cat-count">${counts[c.id] || 0} files</div>
+                        <div class="cat-date">Last update: 24 hours ago</div>
+                    </div>
+                </div>
+            `).join("");
+
+            // Render Links (MISMO HTML INTERNO)
+            if(state.cur){
+                linkContainer.style.display = "grid";
+                // Si la carpeta está vacía de todo
+                if(currentLinks.length === 0 && subCats.length === 0){
+                    linkContainer.innerHTML = `
+                        <div class="empty">
+                            <strong>This folder is empty</strong><br>
+                            Tap the pink '+' button below to add your first link here.
+                        </div>`;
+                } else {
+                    linkContainer.innerHTML = currentLinks.map(l => `
+                        <div class="link">
+                            <a class="thumb" href="${l.url}" target="_blank">
+                                <img src="${getThumb(l.url)}" onerror="this.src='https://www.google.com/s2/favicons?domain=${domain(l.url)}&sz=128'">
+                            </a>
+                            <div class="meta">
+                                <a class="url" href="${l.url}" target="_blank">${domain(l.url)}</a>
+                                ${l.note ? `<div class="note">${l.note}</div>` : ""}
+                                <div class="time">${ago(l.date)}</div>
+                                <div class="actions">
+                                    <a class="btn wa" href="https://wa.me/?text=${encodeURIComponent(l.url)}" target="_blank">WhatsApp</a>
+                                    <button class="btn del" onclick="removeLink(${l.id})">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join("");
+                }
+            } else {
+                linkContainer.style.display = "none";
+            }
+        }
+
+        // --- MISMAS FUNCIONES LOGICAS ---
+
+        function openCat(id){ state.cur = id; render(); window.scrollTo(0,0); }
+        
+        function goHome(){
+            if(!state.cur) return;
+            let parent = state.cats.find(c => c.id === state.cur)?.parent;
+            state.cur = parent || null; // Sube un nivel o vuelve al root
+            render();
+        }
+
+        function openAdd(){
+            // Mismo generador de opciones
+            const opts = state.cats.map(c => `<option value="${c.id}" ${c.id===state.cur?'selected':''}>${c.emoji} ${c.name}</option>`).join("");
+            const sheet = document.getElementById("sheet");
+            sheet.style.display="block";
+            // Nuevo diseño CSS aplicado al Modal
+            sheet.innerHTML = `
+                <div class="sheet-bg" onclick="closeSheet()">
+                    <div class="sheet" onclick="event.stopPropagation()">
+                        <div class="recent-title" style="margin-bottom:20px; text-align:center;">Add New Link</div>
+                        <input id="url" class="input" placeholder="Paste link here (https://...)">
+                        <input id="note" class="input" placeholder="Note or description (optional)">
+                        <select id="cat-sel" class="select">${opts}</select>
+                        <button class="save" onclick="addLink()">Save to Vault</button>
+                    </div>
+                </div>`;
+            document.getElementById("url").focus();
+        }
+
+        function addLink(){
+            let url = document.getElementById("url").value.trim();
+            if(!url) return;
+            if(!/^https?:\/\//i.test(url)) url = "https://" + url;
+            
+            state.links.unshift({
+                id: Date.now(),
+                url: url,
+                note: document.getElementById("note").value.trim(),
+                cat: document.getElementById("cat-sel").value,
+                date: Date.now()
+            });
+            saveState();
+            closeSheet();
+            render();
+        }
+
+        let pickedIcon = "📁"; // Icono por defecto
+        let pickedGradient = "card-purple"; // Color por defecto
+
+        function openAddCategory(){
+            // Asignar color aleatorio de los 4 disponibles para la nueva carpeta
+            const grads = ["card-purple", "card-orange", "card-blue", "card-pink"];
+            pickedGradient = grads[Math.floor(Math.random() * grads.length)];
+            
+            const sheet = document.getElementById("sheet");
+            sheet.style.display="block";
+            // Adaptado con el generador de iconos antiguo
+            sheet.innerHTML = `
+                <div class="sheet-bg" onclick="closeSheet()">
+                    <div class="sheet" onclick="event.stopPropagation()">
+                        <div class="recent-title" style="margin-bottom:20px; text-align:center;">Create Folder</div>
+                        <input id="newcat-name" class="input" placeholder="Folder Name">
+                        <div class="icon-picker">${ICONS.map(i => `<div class="icon-item" onclick="pickIcon(this,'${i}')">${i}</div>`).join("")}</div>
+                        <button class="save" onclick="addCategory()">Create Folder</button>
+                    </div>
+                </div>`;
+            document.getElementById("newcat-name").focus();
+        }
+
+        function pickIcon(el, icon){
+            document.querySelectorAll(".icon-item").forEach(i => i.classList.remove("sel"));
+            el.classList.add("sel");
+            pickedIcon = icon; // Aunque en el diseño visual de carpeta usamos '📁' amarillo
+        }
+
+        function addCategory(){
+            const name = document.getElementById("newcat-name").value.trim();
+            if(!name) return;
+            state.cats.push({
+                id: "c" + Date.now(),
+                name: name,
+                emoji: pickedIcon || "📁",
+                grad: pickedGradient, // Color aleatorio asignado arriba
+                parent: state.cur // Mantiene lógica de subcategorías
+            });
+            saveState();
+            closeSheet();
+            render();
+        }
+
+        function deleteCategory(id, e){
+            e.stopPropagation(); // No abrir la categoría al borrar
+            if(!confirm("Delete this folder and ALL links inside?")) return;
+            state.cats = state.cats.filter(c => c.id !== id);
+            state.links = state.links.filter(l => l.cat !== id);
+            saveState();
+            render();
+        }
+
+        function removeLink(id){
+            if(!confirm("Delete this link?")) return;
+            state.links = state.links.filter(l => l.id !== id);
+            saveState();
+            render();
+        }
+
+        function closeSheet(){ document.getElementById("sheet").style.display="none"; }
+
+        // Mismo Inicio
+        render();
+    </script>
+    <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+</script>
+</body>
+</html>
