@@ -1,18 +1,24 @@
-const CACHE = 'lv-v99';
+const CACHE = 'lv-v100';
+const FILES = ['/linkvault/', '/linkvault/index.html'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll(FILES))
+  );
 });
 
 self.addEventListener('activate', e => {
   self.clients.claim();
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     )
   );
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(fetch(e.request));
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request))
+  );
 });
