@@ -295,6 +295,7 @@
             <div class="user-info">
                 <div class="avatar-crown">👑</div>
                 <div class="welcome-text">Hello! <span>Linda Smith</span></div>
+                <div id="subtitle-text" class="sub-welcome">Let's manage your cloud storage.</div>
             </div>
             <div class="icon-bell" onclick="openSettings()" style="cursor:pointer;font-size:24px;-webkit-tap-highlight-color:transparent">⚙️</div>
         </div>
@@ -535,43 +536,6 @@
             return chain;
         }
 
-        function renderSubRow(parentId, level){
-            const MAX_LEVEL = 2; // 0=root shown as pills, 1+2 shown as sub-rows (3 total levels)
-            if(level > MAX_LEVEL) return '';
-            const subCats = state.cats.filter(c => c.parent === parentId);
-            if(!subCats.length) return '';
-
-            const indent = level * 12;
-            const boxSize = level === 1 ? 44 : 38;
-            const fontSize = level === 1 ? 22 : 18;
-            const labelSize = level === 1 ? 10 : 9;
-
-            let h = `<div style="padding:4px ${16}px 8px ${16+indent}px;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:flex-end">`;
-            subCats.forEach(c => {
-                const isActive = state.cur === c.id;
-                // Check if this cat is an ancestor of current
-                const chain = state.cur ? ancestorChain(state.cur).map(x=>x.id) : [];
-                const isAncestor = chain.includes(c.id);
-                const highlight = isActive || isAncestor;
-                h += `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;position:relative" onclick="selectCat('${c.id}')">
-                    <div style="width:${boxSize}px;height:${boxSize}px;border-radius:${level===1?12:10}px;background:${highlight?'#EDE8FF':'#F2F2F7'};border:2px solid ${highlight?'#7B61FF':'transparent'};display:flex;align-items:center;justify-content:center;font-size:${fontSize}px">${c.emoji||'📁'}</div>
-                    <div style="font-size:${labelSize}px;font-weight:600;color:${highlight?'#7B61FF':'#8E8E93'};max-width:${boxSize+4}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center">${c.name}</div>
-                    <div onclick="event.stopPropagation();deleteCategory('${c.id}',event)" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid #eee;display:flex;align-items:center;justify-content:center;font-size:9px;color:#C7C7CC;cursor:pointer;z-index:1">✕</div>
-                </div>`;
-            });
-            h += '</div>';
-
-            // If one of these subcats is selected or ancestor, show its children too
-            const chain = state.cur ? ancestorChain(state.cur).map(x=>x.id) : [];
-            subCats.forEach(c => {
-                if(state.cur === c.id || chain.includes(c.id)){
-                    h += renderSubRow(c.id, level+1);
-                }
-            });
-
-            return h;
-        }
-
         function render(){
             const subtitle = document.getElementById("subtitle-text");
             if(subtitle) subtitle.innerText = "Let's manage your links.";
@@ -579,8 +543,8 @@
             // ROOT PILLS
             const pillsEl = document.getElementById("cat-pills");
             const rootCats = state.cats.filter(c => !c.parent);
-            const chain = state.cur ? ancestorChain(state.cur).map(x=>x.id) : [];
-            const rootActive = chain.length ? chain[0] : null;
+            const chain = state.cur ? ancestorChain(state.cur) : [];
+            const rootActive = chain.length ? chain[0].id : null;
 
             let pillsHtml = `<div class="cat-pill ${state.cur===null?'active':''}" onclick="selectCat(null)">
                 <div class="cat-pill-box">🔖</div>
@@ -599,33 +563,65 @@
             let html = '';
 
             if(state.cur === null){
-                const allLinks = state.links;
-                if(!allLinks.length){
+                // ALL mode — show all links flat
+                if(!state.links.length){
                     linksWrap.innerHTML = `<div class="links-empty">No links yet. Tap + to add one.</div>`;
                     return;
                 }
-                html += renderLinksList(allLinks, true);
+                html += renderExplorerList(null, true);
             } else {
-                // Show sub-rows for the selected root cat (level 1 subcats)
-                const rootOfCur = chain.length ? chain[0] : state.cur;
-                html += renderSubRow(rootOfCur, 1);
-
-                // Links of current cat
-                const catLinks = state.links.filter(l => l.cat === state.cur);
-                const directSubs = state.cats.filter(c => c.parent === state.cur);
-                if(!catLinks.length && !directSubs.length){
-                    html += `<div class="links-empty">No links here. Tap + to add one.</div>`;
-                } else if(catLinks.length){
-                    html += renderLinksList(catLinks, false);
-                }
+                // EXPLORER mode — breadcrumb + subfolders + links
+                html += renderBreadcrumb();
+                html += renderExplorerList(state.cur, false);
             }
 
             linksWrap.innerHTML = html;
         }
 
-        function renderLinksList(links, showCat){
-            if(!links.length) return '';
+        function renderBreadcrumb(){
+            const chain = ancestorChain(state.cur); // [root, ...parents, current]
+            let h = '<div style="display:flex;align-items:center;gap:4px;padding:8px 16px 6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex-wrap:nowrap">';
+            h += `<span onclick="selectCat(null)" style="font-size:12px;font-weight:600;color:#7B61FF;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent">All</span>`;
+            chain.forEach((c, i) => {
+                h += `<span style="font-size:12px;color:#C7C7CC;flex-shrink:0"> › </span>`;
+                const isLast = i === chain.length - 1;
+                h += `<span onclick="selectCat('${c.id}')" style="font-size:12px;font-weight:600;color:${isLast?'#1C1C1E':'#7B61FF'};cursor:${isLast?'default':'pointer'};white-space:nowrap;-webkit-tap-highlight-color:transparent">${c.emoji||''} ${c.name}</span>`;
+            });
+            h += '</div>';
+            return h;
+        }
+
+        function renderExplorerList(parentId, showCat){
+            // subfolders of current
+            const subCats = parentId === null ? [] : state.cats.filter(c => c.parent === parentId);
+            // links in current (or all if parentId null)
+            const links = parentId === null ? state.links : state.links.filter(l => l.cat === parentId);
+
+            if(!subCats.length && !links.length){
+                return `<div class="links-empty">Empty. Tap + to add.</div>`;
+            }
+
             let h = '<div class="link-list">';
+
+            // FOLDERS FIRST
+            subCats.forEach(c => {
+                const count = state.links.filter(l => getAllCatIds(c.id).includes(l.cat)).length;
+                h += `<div class="link-row" onclick="selectCat('${c.id}')" style="cursor:pointer">
+                    <div class="link-thumb" style="background:#FFF3E0;border-radius:10px;font-size:24px;display:flex;align-items:center;justify-content:center">
+                        ${c.emoji||'📁'}
+                    </div>
+                    <div class="link-row-info">
+                        <div class="link-row-url" style="color:#1C1C1E">${c.name}</div>
+                        <div class="link-row-meta">${count} link${count!==1?'s':''}</div>
+                    </div>
+                    <div class="link-row-actions">
+                        <button class="lbtn" onclick="event.stopPropagation();deleteCategory('${c.id}',event)" style="background:#FFF0F0;color:#FF3B30;font-weight:700">✕</button>
+                    </div>
+                    <div style="color:#C7C7CC;font-size:18px;padding-left:4px;flex-shrink:0">›</div>
+                </div>`;
+            });
+
+            // LINKS AFTER
             links.forEach(l => {
                 const t = getThumb(l.url);
                 const wa = "https://wa.me/?text=" + encodeURIComponent(l.url);
@@ -640,11 +636,12 @@
                         <div class="link-row-meta">${ago(l.date)}${showCat && cat ? ' · ' + cat.emoji + ' ' + cat.name : ''}</div>
                     </div>
                     <div class="link-row-actions">
-                        <a class="lbtn lbtn-wa" href="${wa}" target="_blank">${WA_SVG}</a>
-                        <button class="lbtn lbtn-del" onclick="removeLink(${l.id})">✕</button>
+                        <a class="lbtn lbtn-wa" href="${wa}" target="_blank" onclick="event.stopPropagation()">${WA_SVG}</a>
+                        <button class="lbtn lbtn-del" onclick="event.stopPropagation();removeLink(${l.id})">✕</button>
                     </div>
                 </div>`;
             });
+
             h += '</div>';
             return h;
         }
@@ -652,6 +649,7 @@
         function selectCat(id){
             state.cur = id;
             render();
+            window.scrollTo(0,0);
         }
 
         // --- MISMAS FUNCIONES LOGICAS ---
