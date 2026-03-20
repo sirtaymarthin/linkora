@@ -1,6 +1,6 @@
 {
-  "name": "LinkVault",
-  "short_name": "LinkVault",
+  "name": "LinkVault v2",
+  "short_name": "LinkVault v2",
   "description": "Guarda tus links al instante",
   "start_url": "/linkvault/",
   "scope": "/linkvault/",
