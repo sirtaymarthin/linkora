@@ -295,7 +295,6 @@
             <div class="user-info">
                 <div class="avatar-crown">👑</div>
                 <div class="welcome-text">Hello! <span>Linda Smith</span></div>
-                <div id="subtitle-text" class="sub-welcome">Let's manage your cloud storage.</div>
             </div>
             <div class="icon-bell" onclick="openSettings()" style="cursor:pointer;font-size:24px;-webkit-tap-highlight-color:transparent">⚙️</div>
         </div>
@@ -522,31 +521,75 @@
             return ids;
         }
 
+        // Returns depth of a cat (root=0, sub=1, subsub=2)
+        function catDepth(id){
+            let d=0, c=state.cats.find(x=>x.id===id);
+            while(c && c.parent){ d++; c=state.cats.find(x=>x.id===c.parent); }
+            return d;
+        }
+
+        // Returns ancestor chain [root, level1, level2] for a given id
+        function ancestorChain(id){
+            let chain=[], c=state.cats.find(x=>x.id===id);
+            while(c){ chain.unshift(c); c=c.parent?state.cats.find(x=>x.id===c.parent):null; }
+            return chain;
+        }
+
+        function renderSubRow(parentId, level){
+            const MAX_LEVEL = 2; // 0=root shown as pills, 1+2 shown as sub-rows (3 total levels)
+            if(level > MAX_LEVEL) return '';
+            const subCats = state.cats.filter(c => c.parent === parentId);
+            if(!subCats.length) return '';
+
+            const indent = level * 12;
+            const boxSize = level === 1 ? 44 : 38;
+            const fontSize = level === 1 ? 22 : 18;
+            const labelSize = level === 1 ? 10 : 9;
+
+            let h = `<div style="padding:4px ${16}px 8px ${16+indent}px;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:flex-end">`;
+            subCats.forEach(c => {
+                const isActive = state.cur === c.id;
+                // Check if this cat is an ancestor of current
+                const chain = state.cur ? ancestorChain(state.cur).map(x=>x.id) : [];
+                const isAncestor = chain.includes(c.id);
+                const highlight = isActive || isAncestor;
+                h += `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;position:relative" onclick="selectCat('${c.id}')">
+                    <div style="width:${boxSize}px;height:${boxSize}px;border-radius:${level===1?12:10}px;background:${highlight?'#EDE8FF':'#F2F2F7'};border:2px solid ${highlight?'#7B61FF':'transparent'};display:flex;align-items:center;justify-content:center;font-size:${fontSize}px">${c.emoji||'📁'}</div>
+                    <div style="font-size:${labelSize}px;font-weight:600;color:${highlight?'#7B61FF':'#8E8E93'};max-width:${boxSize+4}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center">${c.name}</div>
+                    <div onclick="event.stopPropagation();deleteCategory('${c.id}',event)" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid #eee;display:flex;align-items:center;justify-content:center;font-size:9px;color:#C7C7CC;cursor:pointer;z-index:1">✕</div>
+                </div>`;
+            });
+            h += '</div>';
+
+            // If one of these subcats is selected or ancestor, show its children too
+            const chain = state.cur ? ancestorChain(state.cur).map(x=>x.id) : [];
+            subCats.forEach(c => {
+                if(state.cur === c.id || chain.includes(c.id)){
+                    h += renderSubRow(c.id, level+1);
+                }
+            });
+
+            return h;
+        }
+
         function render(){
             const subtitle = document.getElementById("subtitle-text");
             if(subtitle) subtitle.innerText = "Let's manage your links.";
 
-            // CATEGORY PILLS — always show root cats
+            // ROOT PILLS
             const pillsEl = document.getElementById("cat-pills");
             const rootCats = state.cats.filter(c => !c.parent);
+            const chain = state.cur ? ancestorChain(state.cur).map(x=>x.id) : [];
+            const rootActive = chain.length ? chain[0] : null;
 
-            // Find which root cat is active (or ancestor of active)
-            let activePill = null;
-            if(state.cur){
-                let c = state.cats.find(x => x.id === state.cur);
-                while(c){
-                    if(!c.parent){ activePill = c.id; break; }
-                    c = state.cats.find(x => x.id === c.parent);
-                }
-            }
-
-            let pillsHtml = `<div class="cat-pill ${state.cur === null ? 'active' : ''}" onclick="selectCat(null)">
+            let pillsHtml = `<div class="cat-pill ${state.cur===null?'active':''}" onclick="selectCat(null)">
                 <div class="cat-pill-box">🔖</div>
                 <div class="cat-pill-label">All</div>
             </div>`;
             rootCats.forEach(c => {
-                pillsHtml += `<div class="cat-pill ${activePill === c.id || state.cur === c.id ? 'active' : ''}" onclick="selectCat('${c.id}')">
-                    <div class="cat-pill-box">${c.emoji || '📁'}</div>
+                const active = state.cur===c.id || rootActive===c.id;
+                pillsHtml += `<div class="cat-pill ${active?'active':''}" onclick="selectCat('${c.id}')">
+                    <div class="cat-pill-box">${c.emoji||'📁'}</div>
                     <div class="cat-pill-label">${c.name}</div>
                 </div>`;
             });
@@ -556,7 +599,6 @@
             let html = '';
 
             if(state.cur === null){
-                // ALL: just show all links
                 const allLinks = state.links;
                 if(!allLinks.length){
                     linksWrap.innerHTML = `<div class="links-empty">No links yet. Tap + to add one.</div>`;
@@ -564,24 +606,14 @@
                 }
                 html += renderLinksList(allLinks, true);
             } else {
-                // Show subcategories of current as sub-pills
-                const subCats = state.cats.filter(c => c.parent === state.cur);
-                if(subCats.length){
-                    html += '<div style="padding:4px 16px 8px;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none">';
-                    subCats.forEach(c => {
-                        const isActive = state.cur === c.id;
-                        html += `<div onclick="selectCat('${c.id}')" style="display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent">
-                            <div style="width:44px;height:44px;border-radius:12px;background:${isActive?'#EDE8FF':'#F2F2F7'};border:2px solid ${isActive?'#7B61FF':'transparent'};display:flex;align-items:center;justify-content:center;font-size:22px">${c.emoji || '📁'}</div>
-                            <div style="font-size:10px;font-weight:600;color:${isActive?'#7B61FF':'#8E8E93'};max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div>
-                        </div>
-                        <div onclick="deleteCategory('${c.id}',event)" style="position:relative;align-self:flex-start;margin-top:4px;font-size:10px;color:#C7C7CC;cursor:pointer;flex-shrink:0">✕</div>`;
-                    });
-                    html += '</div>';
-                }
+                // Show sub-rows for the selected root cat (level 1 subcats)
+                const rootOfCur = chain.length ? chain[0] : state.cur;
+                html += renderSubRow(rootOfCur, 1);
 
-                // Links of current cat only
+                // Links of current cat
                 const catLinks = state.links.filter(l => l.cat === state.cur);
-                if(!catLinks.length && !subCats.length){
+                const directSubs = state.cats.filter(c => c.parent === state.cur);
+                if(!catLinks.length && !directSubs.length){
                     html += `<div class="links-empty">No links here. Tap + to add one.</div>`;
                 } else if(catLinks.length){
                     html += renderLinksList(catLinks, false);
