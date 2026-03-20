@@ -251,6 +251,38 @@
         .links-empty { padding: 40px 16px; text-align: center; color: #C7C7CC; font-size: 14px; font-weight: 600; }
         .links-section-title { font-size: 13px; font-weight: 700; color: #8E8E93; padding: 8px 16px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 
+
+        /* SETTINGS */
+        .settings-panel { display:none; position:fixed; inset:0; background:#F7F9FC; z-index:200; flex-direction:column; overflow-y:auto; }
+        .settings-panel.open { display:flex; }
+        .settings-header { display:flex; align-items:center; gap:12px; padding:20px 20px 16px; border-bottom:1px solid #EAEAEA; }
+        .settings-back { width:36px;height:36px;border-radius:10px;background:#F2F2F7;border:none;font-size:20px;font-weight:700;color:#7B61FF;cursor:pointer;display:flex;align-items:center;justify-content:center; }
+        .settings-title { font-size:20px;font-weight:700;color:#1C1C1E; }
+        .settings-section { padding:20px 20px 0; }
+        .settings-section-title { font-size:11px;font-weight:700;color:#8E8E93;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px; }
+        .settings-row { display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border-radius:14px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+        .settings-row-info { display:flex;flex-direction:column;gap:2px; }
+        .settings-row-label { font-size:15px;font-weight:600;color:#1C1C1E; }
+        .settings-row-sub { font-size:12px;color:#8E8E93; }
+        .toggle { width:50px;height:28px;border-radius:14px;background:#E5E5EA;border:none;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0; }
+        .toggle.on { background:#7B61FF; }
+        .toggle::after { content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.2); }
+        .toggle.on::after { transform:translateX(22px); }
+
+        /* DRAG & DROP ORDER */
+        .order-list { display:flex;flex-direction:column;gap:8px; }
+        .order-item { display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);cursor:grab;user-select:none; }
+        .order-item.dragging { opacity:0.5;cursor:grabbing; }
+        .order-item.dragover { border:2px dashed #7B61FF;background:#EDE8FF; }
+        .order-drag-handle { font-size:18px;color:#C7C7CC; }
+        .order-emoji { font-size:22px; }
+        .order-name { font-size:15px;font-weight:600;color:#1C1C1E;flex:1; }
+
+        /* LARGE ICONS MODE */
+        body.large-icons .cat-pill-box { width:66px;height:66px;font-size:30px;border-radius:18px; }
+        body.large-icons .cat-pill-label { font-size:12px;max-width:70px; }
+        body.large-icons .cat-pills { gap:10px; }
+
     </style>
 </head>
 <body>
@@ -265,7 +297,7 @@
                 <div class="welcome-text">Hello! <span>Linda Smith</span></div>
                 <div id="subtitle-text" class="sub-welcome">Let's manage your cloud storage.</div>
             </div>
-            <div class="icon-bell">🔔</div>
+            <div class="icon-bell" onclick="openSettings()" style="cursor:pointer;font-size:24px;-webkit-tap-highlight-color:transparent">⚙️</div>
         </div>
 
         <div class="search-container">
@@ -305,6 +337,30 @@
     </div>
 </nav>
 
+
+    
+    <!-- SETTINGS PANEL -->
+    <div class="settings-panel" id="settings-panel">
+        <div class="safe"></div>
+        <div class="settings-header">
+            <button class="settings-back" onclick="closeSettings()">‹</button>
+            <div class="settings-title">Settings</div>
+        </div>
+        <div class="settings-section">
+            <div class="settings-section-title">Display</div>
+            <div class="settings-row">
+                <div class="settings-row-info">
+                    <div class="settings-row-label">Large category icons</div>
+                    <div class="settings-row-sub">Bigger icons and labels</div>
+                </div>
+                <button class="toggle" id="toggle-large" onclick="toggleLargeIcons()"></button>
+            </div>
+        </div>
+        <div class="settings-section" style="margin-top:8px">
+            <div class="settings-section-title">Reorder categories</div>
+            <div class="order-list" id="order-list"></div>
+        </div>
+    </div>
 
     <div id="sheet" style="display:none"></div>
 
@@ -350,6 +406,110 @@
             return "https://api.microlink.io/?url="+encodeURIComponent(url)+"&meta=true&embed=image.url";
         }
 
+
+
+        // SETTINGS
+        const SK_SETTINGS = 'lv_settings';
+        let settings = JSON.parse(localStorage.getItem(SK_SETTINGS)) || { largeIcons: false };
+
+        function saveSettings(){ localStorage.setItem(SK_SETTINGS, JSON.stringify(settings)); }
+
+        function applySettings(){
+            if(settings.largeIcons){
+                document.body.classList.add('large-icons');
+                document.getElementById('toggle-large').classList.add('on');
+            } else {
+                document.body.classList.remove('large-icons');
+                document.getElementById('toggle-large').classList.remove('on');
+            }
+        }
+
+        function toggleLargeIcons(){
+            settings.largeIcons = !settings.largeIcons;
+            saveSettings();
+            applySettings();
+        }
+
+        function openSettings(){
+            document.getElementById('settings-panel').classList.add('open');
+            applySettings();
+            renderOrderList();
+        }
+
+        function closeSettings(){
+            document.getElementById('settings-panel').classList.remove('open');
+            render();
+        }
+
+        // DRAG & DROP REORDER
+        let dragSrc = null;
+
+        function renderOrderList(){
+            const rootCats = state.cats.filter(c => !c.parent);
+            const el = document.getElementById('order-list');
+            el.innerHTML = rootCats.map((c,i) => `
+                <div class="order-item" draggable="true"
+                    data-id="${c.id}"
+                    ontouchstart="touchStart(event,this)"
+                    ontouchmove="touchMove(event)"
+                    ontouchend="touchEnd(event)"
+                    ondragstart="dragStart(event,this)"
+                    ondragover="dragOver(event,this)"
+                    ondrop="dragDrop(event,this)"
+                    ondragend="dragEnd()">
+                    <span class="order-drag-handle">☰</span>
+                    <span class="order-emoji">${c.emoji||'📁'}</span>
+                    <span class="order-name">${c.name}</span>
+                </div>`).join('');
+        }
+
+        function dragStart(e, el){ dragSrc = el; el.classList.add('dragging'); }
+        function dragOver(e, el){ e.preventDefault(); document.querySelectorAll('.order-item').forEach(i=>i.classList.remove('dragover')); el.classList.add('dragover'); }
+        function dragEnd(){ document.querySelectorAll('.order-item').forEach(i=>{i.classList.remove('dragging');i.classList.remove('dragover');}); }
+        function dragDrop(e, el){
+            e.preventDefault();
+            if(!dragSrc || dragSrc===el) return;
+            const fromId = dragSrc.dataset.id;
+            const toId = el.dataset.id;
+            const fromIdx = state.cats.findIndex(c=>c.id===fromId);
+            const toIdx = state.cats.findIndex(c=>c.id===toId);
+            const [moved] = state.cats.splice(fromIdx,1);
+            state.cats.splice(toIdx,0,moved);
+            saveState();
+            renderOrderList();
+        }
+
+        // Touch drag support
+        let touchItem=null, touchClone=null, touchStartY=0;
+        function touchStart(e,el){ touchItem=el; touchStartY=e.touches[0].clientY; }
+        function touchMove(e){
+            if(!touchItem) return;
+            e.preventDefault();
+            const y = e.touches[0].clientY;
+            const items = [...document.querySelectorAll('.order-item')];
+            items.forEach(i=>i.classList.remove('dragover'));
+            const target = items.find(i=>{
+                const r=i.getBoundingClientRect();
+                return y>=r.top && y<=r.bottom && i!==touchItem;
+            });
+            if(target) target.classList.add('dragover');
+        }
+        function touchEnd(e){
+            if(!touchItem) return;
+            const items = [...document.querySelectorAll('.order-item')];
+            const target = items.find(i=>i.classList.contains('dragover'));
+            if(target && target!==touchItem){
+                const fromId=touchItem.dataset.id, toId=target.dataset.id;
+                const fromIdx=state.cats.findIndex(c=>c.id===fromId);
+                const toIdx=state.cats.findIndex(c=>c.id===toId);
+                const [moved]=state.cats.splice(fromIdx,1);
+                state.cats.splice(toIdx,0,moved);
+                saveState();
+                renderOrderList();
+            }
+            items.forEach(i=>i.classList.remove('dragover'));
+            touchItem=null;
+        }
 
         const WA_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
 
@@ -572,6 +732,7 @@
         function closeSheet(){ document.getElementById("sheet").style.display="none"; }
 
         // Mismo Inicio
+        applySettings();
         render();
     </script>
     <script>
