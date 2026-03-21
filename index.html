@@ -306,6 +306,15 @@
         .cat-list-item.swiped .cat-list-inner { transform:translateX(-80px); }
         .cat-list-item.swiped .cat-list-del { opacity:1; }
 
+
+        /* DETAIL SCREEN */
+        .screen { display:none; flex-direction:column; min-height:100vh; background:var(--bg-color); position:fixed; inset:0; z-index:50; overflow-y:auto; transform:translateX(100%); transition:transform 0.3s ease; }
+        .screen.open { display:flex; transform:translateX(0); }
+        .detail-nav { display:flex; align-items:center; gap:12px; padding:16px 20px 12px; background:var(--bg-color); position:sticky; top:0; z-index:10; border-bottom:1px solid #F0F0F0; }
+        .detail-back { width:36px;height:36px;border-radius:10px;background:#F2F2F7;border:none;font-size:22px;font-weight:700;color:#7B61FF;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+        .detail-nav-title { font-size:17px;font-weight:700;color:#1C1C1E;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .detail-content { flex:1; padding-bottom:100px; }
+
     </style>
 </head>
 <body>
@@ -328,10 +337,19 @@
     <!-- CATEGORY LIST -->
     <div class="cat-sidebar" id="cat-pills"></div>
 
-    <!-- LINKS LIST -->
-    <div id="links-wrap"></div>
+
 </div>
 
+
+<!-- DETAIL SCREEN -->
+<div class="screen" id="detail-screen">
+    <div class="safe"></div>
+    <div class="detail-nav">
+        <button class="detail-back" onclick="closeDetail()">‹</button>
+        <div class="detail-nav-title" id="detail-nav-title"></div>
+    </div>
+    <div class="detail-content" id="detail-content"></div>
+</div>
 
 <nav class="nav-bar">
     <div class="nav-item active" onclick="goHome()">
@@ -604,15 +622,14 @@
 
         let counts={};
         state.links.forEach(l=>counts[l.cat]=(counts[l.cat]||0)+1);
-       const allActive = state.cur===null;
-       const recentCount = Math.min(state.links.length, 10);
-       let pillsHtml = `<div class="cat-list-item${allActive?' active':''}" onclick="selectCat(null)">
-                <div class="cat-list-inner">
-                    <span class="cat-list-icon">🕐</span>
-                    <span class="cat-list-name">Recent</span>
-                    <span class="cat-list-count">${recentCount}</span>
-                </div>
-            </div>`;
+        const allActive = state.cur===null;
+        let pillsHtml = `<div class="cat-list-item${allActive?' active':''}" onclick="selectCat(null)">
+            <div class="cat-list-inner">
+                <span class="cat-list-icon">🔖</span>
+                <span class="cat-list-name">All</span>
+                <span class="cat-list-count">${state.links.length}</span>
+            </div>
+        </div>`;
         rootCats.forEach(c => {
             const active = state.cur===c.id || rootActive===c.id;
             const cnt = (counts[c.id]||0);
@@ -631,24 +648,7 @@
         });
         pillsEl.innerHTML = pillsHtml;
 
-        const linksWrap = document.getElementById("links-wrap");
-        let html = '';
-
-        if(state.cur === null){
-            // ALL mode — show all links flat
-            if(!state.links.length){
-                linksWrap.innerHTML = `<div class="links-empty">No links yet. Tap + to add one.</div>`;
-                return;
-            }
-            const recentLinks = state.links.slice(0, 10);
-            html += renderExplorerList(null, true, recentLinks);
-        } else {
-            // EXPLORER mode — breadcrumb + subfolders + links
-            html += renderBreadcrumb();
-            html += renderExplorerList(state.cur, false);
-        }
-
-        linksWrap.innerHTML = html;
+        // Links shown in detail-screen, not here
     }
 
     function renderBreadcrumb(){
@@ -679,7 +679,7 @@
         // FOLDERS FIRST
         subCats.forEach(c => {
             const count = state.links.filter(l => getAllCatIds(c.id).includes(l.cat)).length;
-            h += `<div class="link-row" onclick="selectCat('${c.id}')" style="cursor:pointer">
+            h += `<div class="link-row" onclick="navigateDetail('${c.id}')" style="cursor:pointer">
                 <div class="link-thumb" style="background:#FFF3E0;border-radius:10px;font-size:24px;display:flex;align-items:center;justify-content:center">
                     ${c.emoji||'📁'}
                 </div>
@@ -721,19 +721,43 @@
 
     function selectCat(id){
         state.cur = id;
+        if(id === null){
+            // Recent — open detail screen with recent links
+            const recentLinks = state.links.slice(0, 10);
+            document.getElementById('detail-nav-title').textContent = '🕐 Recent';
+            document.getElementById('detail-content').innerHTML = recentLinks.length
+                ? renderExplorerList(null, true, recentLinks)
+                : '<div class="links-empty">No links yet.</div>';
+            document.getElementById('detail-screen').classList.add('open');
+        } else {
+            const cat = state.cats.find(c => c.id === id);
+            document.getElementById('detail-nav-title').textContent = (cat ? cat.emoji + ' ' + cat.name : '');
+            document.getElementById('detail-content').innerHTML = renderExplorerList(id, false);
+            document.getElementById('detail-screen').classList.add('open');
+        }
+    }
+
+
+    function navigateDetail(id){
+        state.cur = id;
+        const cat = state.cats.find(c => c.id === id);
+        document.getElementById('detail-nav-title').textContent = (cat ? cat.emoji + ' ' + cat.name : '');
+        document.getElementById('detail-content').innerHTML = renderExplorerList(id, false);
+        document.getElementById('detail-content').scrollTop = 0;
+    }
+
+    function closeDetail(){
+        document.getElementById('detail-screen').classList.remove('open');
+        state.cur = null;
         render();
-        window.scrollTo(0,0);
     }
 
     // --- MISMAS FUNCIONES LOGICAS ---
 
-    function openCat(id){ state.cur = id; render(); window.scrollTo(0,0); }
+    function openCat(id){ selectCat(id); }
 
     function goHome(){
-        if(!state.cur) return;
-        let parent = state.cats.find(c => c.id === state.cur)?.parent;
-        state.cur = parent || null; // Sube un nivel o vuelve al root
-        render();
+        closeDetail();
     }
 
     function openAdd(){
