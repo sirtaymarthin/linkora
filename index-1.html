@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="manifest" href="/linkvault/manifest.json">
+<meta name="theme-color" content="#F7F9FC">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LinkVault">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkVault Pro - Cloud Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- RESET Y BASES --- */
+        :root {
+            --bg-color: #F7F9FC;
+            --text-main: #1C1C1E;
+            --text-sub: #8E8E93;
+            --purple: #7B61FF;
+            --orange: #FF9F40;
+            --blue: #36D1DC;
+            --pink: #FF5E78;
+            --white: #FFFFFF;
+            --shadow-soft: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        *{box-sizing:border-box;margin:0;padding:0; -webkit-tap-highlight-color: transparent;}
+        body{
+            font-family:'Inter', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 100px; /* Espacio para la barra inferior */
+        }
+
+        .view{display:none;flex-direction:column;width: 100%;}
+        .view.active{display:flex}
+        .safe{height:env(safe-area-inset-top, 20px)}
+
+        /* --- HEADER ESTILO CLOUD --- */
+        .cloud-header {
+            padding: 30px 24px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .user-info { display: flex; flex-direction: column; gap: 8px; }
+        
+        .avatar-crown {
+            width: 56px; height: 56px;
+            background-color: #E2E2E2; /* Gris de fondo */
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        /* El círculo gris oscuro alrededor de la corona en tu imagen */
+        .avatar-crown::after {
+            content: ''; position: absolute; inset: -3px;
+            border-radius: 50%; border: 3px solid #636366; opacity: 0.1;
+        }
+
+        .welcome-text { font-size: 26px; font-weight: 700; line-height: 1.2; }
+        .welcome-text span { font-weight: 500; display: block; }
+        .sub-welcome { color: var(--text-sub); font-size: 14px; margin-top: 6px; font-weight: 400;}
+
+        .icon-bell {
+            width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; color: #636366; cursor: pointer;
+        }
+
+        /* --- BUSCADOR --- */
+        .search-container { padding: 0 24px 25px; }
+        .search-box {
+            width: 100%; height: 52px;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            display: flex; align-items: center;
+            padding: 0 16px;
+            border: 1px solid #EAEAEA;
+        }
+        .search-box input {
+            flex: 1; border: none; outline: none;
+            background: transparent;
+            font-size: 16px; color: var(--text-main);
+        }
+        .search-box input::placeholder { color: #C7C7CC; }
+        .search-icon { color: var(--purple); font-size: 20px; cursor: pointer; }
+
+        /* --- GRID DE CATEGORIAS (NUEVO ESTILO) --- */
+        .cat-scroll {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding: 0 24px 30px;
+        }
+
+        .cat-card {
+            border-radius: 24px;
+            padding: 24px;
+            color: var(--white);
+            height: 200px; /* Más altas como en la imagen */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .cat-card:active { transform: scale(0.97); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+        .cat-card-top { display: flex; justify-content: space-between; align-items: center; }
+        .folder-icon { font-size: 36px; color: #FFE082; } /* Amarillo carpeta */
+        .dots-menu { font-size: 20px; color: rgba(255,255,255,0.7); cursor: pointer; padding: 5px; }
+
+        .cat-card-bottom { display: flex; flex-direction: column; gap: 4px; }
+        .cat-name { font-size: 18px; font-weight: 700; color: var(--white); }
+        .cat-count { font-size: 14px; color: rgba(255,255,255,0.8); font-weight: 500; }
+        .cat-date { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+
+        /* Colores específicos de la imagen */
+        .card-purple { background: var(--purple); }
+        .card-orange { background: var(--orange); }
+        .card-blue { background: var(--blue); }
+        .card-pink { background: var(--pink); }
+        
+        /* Badge antiguo, adaptado */
+        .badge { display: none; } /* Oculto en este diseño, el número va abajo */
+
+        /* --- SECCION RECIENTES --- */
+        .recent-section { padding: 0 24px 30px; }
+        .recent-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--text-main); }
+        .recent-item {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex; align-items: center; gap: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border: 1px solid #F0F0F0;
+        }
+        .recent-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: #F2F2F7;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: var(--text-sub);
+        }
+        .recent-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        .recent-name { font-size: 15px; font-weight: 600; color: var(--text-main); }
+        .recent-meta { font-size: 12px; color: var(--text-sub); }
+
+        /* --- VISTA DE DETALLES (ENLACES) --- */
+        .detail-scroll { padding: 20px 24px 120px; display: grid; gap: 16px; }
+        .link {
+            background: var(--white); border-radius: 16px; overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid #F0F0F0;
+        }
+        .thumb { width: 100%; aspect-ratio: 16/9; background: #eee; display: block; }
+        .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .meta { padding: 14px 16px; }
+        .url { font-weight: 600; font-size: 15px; color: var(--text-main); text-decoration: none; display: block; margin-bottom: 4px;}
+        .note { font-size: 13px; color: var(--text-sub); margin-top: 4px; line-height: 1.4; }
+        .time { font-size: 11px; color: #C7C7CC; margin-top: 8px; }
+        .actions { display: flex; gap: 10px; margin-top: 12px; }
+        .btn { padding: 8px 14px; border-radius: 8px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s;}
+        .wa { background: #E8F9EE; color: #25D366; } .wa:active { background: #D0F2DC; }
+        .del { background: #FFEBEB; color: #FF3B30; } .del:active { background: #FFD6D6; }
+
+        /* --- NAVEGACION INFERIOR (REEMPLAZA FABS) --- */
+        .nav-bar {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%; height: 85px;
+            background: var(--white);
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 0 10px 15px; /* Padding bottom para safe area */
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
+            border-top: 1px solid #EAEAEA;
+            z-index: 50;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            color: #C7C7CC; cursor: pointer; flex: 1; text-align: center;
+        }
+        .nav-item.active { color: var(--purple); }
+        .nav-icon { font-size: 22px; }
+        .nav-label { font-size: 11px; font-weight: 600; }
+
+        /* Botón central "+" rosa */
+        .nav-add-btn {
+            width: 60px; height: 60px;
+            background: var(--pink);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--white);
+            font-size: 30px;
+            box-shadow: 0 5px 15px rgba(255, 94, 120, 0.4);
+            margin-top: -35px; /* Flota hacia arriba */
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .nav-add-btn:active { transform: scale(0.9) translateY(-35px); }
+
+        /* --- UI ELEMENTS (BOTON VOLVER, MODALES) --- */
+        .back-nav { padding: 10px 24px; font-weight: 600; color: var(--purple); cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; }
+        
+        .sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; z-index: 100; animation: fadeIn 0.3s; }
+        .sheet { background: var(--white); width: 100%; border-radius: 30px 30px 0 0; padding: 30px 24px 40px; animation: slideUp 0.3s; }
+        
+        .input, .select { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid #EAEAEA; background: #FAFAFA; margin-bottom: 12px; font-size: 16px; font-family: inherit;}
+        .input:focus, .select:focus { border-color: var(--purple); background: var(--white); outline: none; }
+        
+        .save { width: 100%; padding: 18px; border: none; border-radius: 16px; background: var(--purple); color: var(--white); font-weight: 700; font-size: 17px; cursor: pointer; box-shadow: 0 5px 15px rgba(123, 97, 255, 0.3); }
+        .save:active { transform: scale(0.98); }
+
+        .icon-picker { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; margin-bottom: 15px; max-height: 160px; overflow-y: auto; padding: 5px; }
+        .icon-item { font-size: 24px; background: #F2F2F7; border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: background 0.2s; }
+        .icon-item.sel { background: var(--purple); color: var(--white); }
+
+        .empty { padding: 80px 24px; text-align: center; color: var(--text-sub); font-size: 15px; line-height: 1.5; }
+
+        /* Animaciones */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* CATEGORY PILLS */
+        .cat-pills-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 16px 12px; scrollbar-width: none; }
+        .cat-pills-wrap::-webkit-scrollbar { display: none; }
+        .cat-pills { display: flex; gap: 8px; width: max-content; }
+        .cat-pill { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .cat-pill-box { width: 52px; height: 52px; border-radius: 14px; background: #F2F2F7; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 2px solid transparent; transition: all 0.15s; }
+        .cat-pill.active .cat-pill-box { background: #EDE8FF; border-color: #7B61FF; }
+        .cat-pill-label { font-size: 10px; font-weight: 600; color: #8E8E93; text-align: center; max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cat-pill.active .cat-pill-label { color: #7B61FF; }
+        .cat-pill:active .cat-pill-box { transform: scale(0.92); }
+
+        /* LINK LIST */
+        .link-list { display: flex; flex-direction: column; gap: 0; padding: 0 16px 20px; }
+        .link-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #F0F0F5; }
+        .link-row:last-child { border-bottom: none; }
+        .link-row-inner { display:flex;align-items:center;gap:12px;padding:10px 0;width:100%;transition:transform 0.25s ease; }
+        .link-thumb { width: 56px; height: 40px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #F2F2F7; display: flex; align-items: center; justify-content: center; }
+        .link-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .link-row-info { flex: 1; min-width: 0; }
+        .link-row-url { font-size: 13px; font-weight: 600; color: #1C1C1E; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; display: block; }
+        .link-row-note { font-size: 11px; color: #8E8E93; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
+        .link-row-meta { font-size: 10px; color: #C7C7CC; margin-top: 2px; }
+        .link-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .lbtn { width: 30px; height: 30px; border-radius: 8px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; -webkit-tap-highlight-color: transparent; text-decoration: none; }
+        .lbtn:active { opacity: 0.6; }
+        .lbtn-wa { background: #EDE8FF; }
+        .lbtn-del { background: #FFF0F0; color: #FF3B30; font-weight: 700; }
+        .links-empty { padding: 40px 16px; text-align: center; color: #C7C7CC; font-size: 14px; font-weight: 600; }
+        .links-section-title { font-size: 13px; font-weight: 700; color: #8E8E93; padding: 8px 16px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+
+        /* SETTINGS */
+        .settings-panel { display:none; position:fixed; inset:0; background:#F7F9FC; z-index:200; flex-direction:column; overflow-y:auto; }
+        .settings-panel.open { display:flex; }
+        .settings-header { display:flex; align-items:center; gap:12px; padding:20px 20px 16px; border-bottom:1px solid #EAEAEA; }
+        .settings-back { width:36px;height:36px;border-radius:10px;background:#F2F2F7;border:none;font-size:20px;font-weight:700;color:#7B61FF;cursor:pointer;display:flex;align-items:center;justify-content:center; }
+        .settings-title { font-size:20px;font-weight:700;color:#1C1C1E; }
+        .settings-section { padding:20px 20px 0; }
+        .settings-section-title { font-size:11px;font-weight:700;color:#8E8E93;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px; }
+        .settings-row { display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border-radius:14px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+        .settings-row-info { display:flex;flex-direction:column;gap:2px; }
+        .settings-row-label { font-size:15px;font-weight:600;color:#1C1C1E; }
+        .settings-row-sub { font-size:12px;color:#8E8E93; }
+        .toggle { width:50px;height:28px;border-radius:14px;background:#E5E5EA;border:none;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0; }
+        .toggle.on { background:#7B61FF; }
+        .toggle::after { content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.2); }
+        .toggle.on::after { transform:translateX(22px); }
+
+        /* DRAG & DROP ORDER */
+        .order-list { display:flex;flex-direction:column;gap:8px; }
+        .order-item { display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);cursor:grab;user-select:none; }
+        .order-item.dragging { opacity:0.5;cursor:grabbing; }
+        .order-item.dragover { border:2px dashed #7B61FF;background:#EDE8FF; }
+        .order-drag-handle { font-size:18px;color:#C7C7CC; }
+        .order-emoji { font-size:22px; }
+        .order-name { font-size:15px;font-weight:600;color:#1C1C1E;flex:1; }
+
+        /* LARGE ICONS MODE */
+        body.large-icons .cat-pill-box { width:66px;height:66px;font-size:30px;border-radius:18px; }
+        body.large-icons .cat-pill-label { font-size:12px;max-width:70px; }
+        body.large-icons .cat-pills { gap:10px; }
+        body.large-icons .cat-list-item { padding:15px 16px; }
+        body.large-icons .cat-list-icon { font-size:30px;width:40px; }
+        body.large-icons .cat-list-name { font-size:17px; }
+        body.large-icons .cat-list-count { font-size:14px; }
+
+
+        /* CATEGORY SIDEBAR LIST */
+        .cat-sidebar { display:flex;flex-direction:column;gap:2px;padding:0 12px 12px; }
+        .cat-list-item { display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;cursor:pointer;position:relative;overflow:hidden;transition:background 0.15s;-webkit-tap-highlight-color:transparent;touch-action:pan-y; }
+        .cat-list-item.active { background:#EDE8FF; }
+        .cat-list-item:not(.active):active { background:#F2F2F7; }
+        .cat-list-icon { font-size:22px;flex-shrink:0;width:32px;text-align:center; }
+        .cat-list-name { font-size:14px;font-weight:600;color:#1C1C1E;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .cat-list-item.active .cat-list-name { color:#7B61FF; }
+        .cat-list-count { font-size:12px;font-weight:600;color:#C7C7CC;flex-shrink:0; }
+        .cat-list-item.active .cat-list-count { color:#7B61FF; }
+        /* Swipe delete */
+        .cat-list-inner { display:flex;align-items:center;gap:12px;width:100%;transition:transform 0.25s ease; }
+        .cat-list-del { position:absolute;right:0;top:0;bottom:0;width:80px;background:#FF3B30;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;border-radius:0 12px 12px 0;opacity:0;transition:opacity 0.2s; }
+        .cat-list-item.swiped .cat-list-inner { transform:translateX(-80px); }
+        .cat-list-item.swiped .cat-list-del { opacity:1; }
+
+
+
+        /* LINK ROW SWIPE DELETE */
+        .link-row { position:relative; overflow:hidden; }
+        .link-row-inner { display:flex;align-items:center;gap:12px;padding:10px 0;width:100%;transition:transform 0.25s ease; }
+        .link-row-del-bg { position:absolute;right:0;top:0;bottom:0;width:80px;background:#FF3B30;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;opacity:0;transition:opacity 0.2s; }
+        .link-row.swiped .link-row-inner { transform:translateX(-80px); }
+        .link-row.swiped .link-row-del-bg { opacity:1; }
+
+        /* DETAIL SCREEN */
+        .screen { display:none; flex-direction:column; min-height:100vh; background:var(--bg-color); position:fixed; inset:0; z-index:50; overflow-y:auto; transform:translateX(100%); transition:transform 0.3s ease; }
+        .screen.open { display:flex; transform:translateX(0); }
+        .detail-nav { display:flex; align-items:center; gap:12px; padding:16px 20px 12px; background:var(--bg-color); position:sticky; top:0; z-index:10; border-bottom:1px solid #F0F0F0; }
+        .detail-back { width:36px;height:36px;border-radius:10px;background:#F2F2F7;border:none;font-size:22px;font-weight:700;color:#7B61FF;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+        .detail-nav-title { font-size:17px;font-weight:700;color:#1C1C1E;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .detail-content { flex:1; padding-bottom:100px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="safe"></div>
+
+    <div id="home" class="view active">
+        
+        <div style="display:flex;justify-content:flex-end;padding:16px 20px 0;">
+            <div onclick="openSettings()" style="cursor:pointer;font-size:24px;-webkit-tap-highlight-color:transparent">⚙️</div>
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <div class="search-icon" style="margin-right:10px">🔍</div>
+                <input type="text" placeholder="Search" oninput="searchLinks(this.value)">
+            </div>
+        </div>
+
+        <!-- CATEGORY LIST -->
+        <div class="cat-sidebar" id="cat-pills"></div>
+
+
+    </div>
+
+
+    <!-- DETAIL SCREEN -->
+    <div class="screen" id="detail-screen">
+        <div class="safe"></div>
+        <div class="detail-nav">
+            <button class="detail-back" onclick="closeDetail()">‹</button>
+            <div class="detail-nav-title" id="detail-nav-title"></div>
+        </div>
+        <div class="detail-content" id="detail-content"></div>
+    </div>
+
+<nav class="nav-bar">
+    <div class="nav-item active" onclick="goHome()">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item" onclick="openAddCategory()">
+        <div class="nav-icon">📁</div>
+        <div class="nav-label">New Category</div>
+    </div>
+    
+    <div class="nav-item" onclick="openAdd()">
+        <div class="nav-icon">🔗</div>
+        <div class="nav-label">New Link</div>
+    </div>
+    <div class="nav-item">
+        <div class="nav-icon">👤</div>
+        <div class="nav-label">Profile</div>
+    </div>
+</nav>
+
+
+    
+    <!-- SETTINGS PANEL -->
+    <div class="settings-panel" id="settings-panel">
+        <div class="safe"></div>
+        <div class="settings-header">
+            <button class="settings-back" onclick="closeSettings()">‹</button>
+            <div class="settings-title">Settings</div>
+        </div>
+        <div class="settings-section">
+            <div class="settings-section-title">Display</div>
+            <div class="settings-row">
+                <div class="settings-row-info">
+                    <div class="settings-row-label">Large category icons</div>
+                    <div class="settings-row-sub">Bigger icons and labels</div>
+                </div>
+                <button class="toggle" id="toggle-large" onclick="toggleLargeIcons()"></button>
+            </div>
+        </div>
+        <div class="settings-section" style="margin-top:8px">
+            <div class="settings-section-title">Reorder categories</div>
+            <div class="order-list" id="order-list"></div>
+        </div>
+    </div>
+
+    <div id="sheet" style="display:none"></div>
+
+
+    <script>
+        const DEFAULT_CATS=[
+            {id:"music",name:"Music",emoji:"🎵",grad:"card-purple",parent: null},
+            {id:"videos",name:"Recipes",emoji:"🍳",grad:"card-orange",parent: null},
+            {id:"recipes",name:"Videos",emoji:"🎬",grad:"card-blue",parent: null},
+            {id:"sports",name:"Documents",emoji:"📚",grad:"card-pink",parent: null},
+            {id:"movies",name:"Sports",emoji:"⚽",grad:"card-pink",parent: null}
+        ];
+
+        // Mismo array de iconos
+        const ICONS=["🎵","🎬","🍳","⚽","💡","✈️","📚","💻","🎮","🎧","📸","⭐","🧠","🏠","🚗","🛍️","🍔","🎨","📱","🧳","🏋️","🎤","📺","📰","💰","🧪","🌍","🐶","🌟","🔥"];
+        const SK_LINKS="lv_links", SK_CATS="lv_cats";
+
+        // Mismo Estado y LocalStorage
+        let state = {
+            links: JSON.parse(localStorage.getItem(SK_LINKS)) || [],
+            cats: JSON.parse(localStorage.getItem(SK_CATS)) || DEFAULT_CATS,
+            cur: null
+        };
+
+        function saveState(){
+            localStorage.setItem(SK_LINKS, JSON.stringify(state.links));
+            localStorage.setItem(SK_CATS, JSON.stringify(state.cats));
+        }
+
+        // Mismas utilidades
+        function domain(u){ try{return new URL(u).hostname.replace("www.","")}catch{return u} }
+        function ago(t){
+            let m=Math.floor((Date.now()-t)/60000);
+            if(m<1)return "now";
+            if(m<60)return m+"m";
+            let h=Math.floor(m/60);
+            return h<24 ? h+"h" : Math.floor(h/24)+"d";
+        }
+
+        function getThumb(url){
+            let yt=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+            if(yt) return "https://img.youtube.com/vi/"+yt[1]+"/hqdefault.jpg";
+            return "https://api.microlink.io/?url="+encodeURIComponent(url)+"&meta=true&embed=image.url";
+        }
+
+
+
+        // SETTINGS
+        const SK_SETTINGS = 'lv_settings';
+        let settings = JSON.parse(localStorage.getItem(SK_SETTINGS)) || { largeIcons: false };
+
+        function saveSettings(){ localStorage.setItem(SK_SETTINGS, JSON.stringify(settings)); }
+
+        function applySettings(){
+            if(settings.largeIcons){
+                document.body.classList.add('large-icons');
+                document.getElementById('toggle-large').classList.add('on');
+            } else {
+                document.body.classList.remove('large-icons');
+                document.getElementById('toggle-large').classList.remove('on');
+            }
+        }
+
+        function toggleLargeIcons(){
+            settings.largeIcons = !settings.largeIcons;
+            saveSettings();
+            applySettings();
+        }
+
+        function openSettings(){
+            document.getElementById('settings-panel').classList.add('open');
+            applySettings();
+            renderOrderList();
+        }
+
+        function closeSettings(){
+            document.getElementById('settings-panel').classList.remove('open');
+            render();
+        }
+
+        // DRAG & DROP REORDER
+        let dragSrc = null;
+
+        function renderOrderList(){
+            const rootCats = state.cats.filter(c => !c.parent);
+            const el = document.getElementById('order-list');
+            el.innerHTML = rootCats.map((c,i) => `
+                <div class="order-item" draggable="true"
+                    data-id="${c.id}"
+                    ontouchstart="touchStart(event,this)"
+                    ontouchmove="touchMove(event)"
+                    ontouchend="touchEnd(event)"
+                    ondragstart="dragStart(event,this)"
+                    ondragover="dragOver(event,this)"
+                    ondrop="dragDrop(event,this)"
+                    ondragend="dragEnd()">
+                    <span class="order-drag-handle">☰</span>
+                    <span class="order-emoji">${c.emoji||'📁'}</span>
+                    <span class="order-name">${c.name}</span>
+                </div>`).join('');
+        }
+
+        function dragStart(e, el){ dragSrc = el; el.classList.add('dragging'); }
+        function dragOver(e, el){ e.preventDefault(); document.querySelectorAll('.order-item').forEach(i=>i.classList.remove('dragover')); el.classList.add('dragover'); }
+        function dragEnd(){ document.querySelectorAll('.order-item').forEach(i=>{i.classList.remove('dragging');i.classList.remove('dragover');}); }
+        function dragDrop(e, el){
+            e.preventDefault();
+            if(!dragSrc || dragSrc===el) return;
+            const fromId = dragSrc.dataset.id;
+            const toId = el.dataset.id;
+            const fromIdx = state.cats.findIndex(c=>c.id===fromId);
+            const toIdx = state.cats.findIndex(c=>c.id===toId);
+            const [moved] = state.cats.splice(fromIdx,1);
+            state.cats.splice(toIdx,0,moved);
+            saveState();
+            renderOrderList();
+        }
+
+        // Touch drag support
+        let touchItem=null, touchClone=null, touchStartY=0;
+        function touchStart(e,el){ touchItem=el; touchStartY=e.touches[0].clientY; }
+        function touchMove(e){
+            if(!touchItem) return;
+            e.preventDefault();
+            const y = e.touches[0].clientY;
+            const items = [...document.querySelectorAll('.order-item')];
+            items.forEach(i=>i.classList.remove('dragover'));
+            const target = items.find(i=>{
+                const r=i.getBoundingClientRect();
+                return y>=r.top && y<=r.bottom && i!==touchItem;
+            });
+            if(target) target.classList.add('dragover');
+        }
+        function touchEnd(e){
+            if(!touchItem) return;
+            const items = [...document.querySelectorAll('.order-item')];
+            const target = items.find(i=>i.classList.contains('dragover'));
+            if(target && target!==touchItem){
+                const fromId=touchItem.dataset.id, toId=target.dataset.id;
+                const fromIdx=state.cats.findIndex(c=>c.id===fromId);
+                const toIdx=state.cats.findIndex(c=>c.id===toId);
+                const [moved]=state.cats.splice(fromIdx,1);
+                state.cats.splice(toIdx,0,moved);
+                saveState();
+                renderOrderList();
+            }
+            items.forEach(i=>i.classList.remove('dragover'));
+            touchItem=null;
+        }
+
+
+        // SWIPE TO DELETE
+        let swipeStartX = 0, swipeStartY = 0, swipeMoved = false;
+        function swipeStart(e, el){
+            swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
+            swipeMoved = false;
+        }
+        function swipeMove(e, el){
+            const dx = e.touches[0].clientX - swipeStartX;
+            const dy = e.touches[0].clientY - swipeStartY;
+            if(Math.abs(dy) > Math.abs(dx)) return; // vertical scroll, ignore
+            if(dx < -30){
+                swipeMoved = true;
+                e.preventDefault();
+                document.querySelectorAll('.cat-list-item.swiped').forEach(i=>{ if(i!==el) i.classList.remove('swiped'); });
+                el.classList.add('swiped');
+            } else if(dx > 10){
+                swipeMoved = true;
+                el.classList.remove('swiped');
+            }
+        }
+        function swipeEnd(e, el){
+            // if barely moved, treat as tap - close any open swipe
+            if(!swipeMoved && el.classList.contains('swiped')){
+                el.classList.remove('swiped');
+            }
+        }
+        function deleteCatSwipe(id){
+            state.cats = state.cats.filter(c => c.id !== id);
+            state.links = state.links.filter(l => l.cat !== id);
+            saveState();
+            render();
+        }
+
+        // SEARCH
+        function searchLinks(q){
+            q = q.toLowerCase().trim();
+            if(!q){ render(); return; }
+            const linksWrap = document.getElementById('links-wrap');
+            const results = state.links.filter(l =>
+                l.url.toLowerCase().includes(q) ||
+                (l.note && l.note.toLowerCase().includes(q))
+            );
+            if(!results.length){
+                linksWrap.innerHTML = '<div class="links-empty">No results found.</div>';
+                return;
+            }
+            linksWrap.innerHTML = renderExplorerList(null, true, results);
+        }
+
+        const WA_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7B61FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';
+
+        // Get all descendant cat ids (cat + all subcats recursively)
+        function getAllCatIds(id){
+            let ids = [id];
+            state.cats.filter(c => c.parent === id).forEach(c => {
+                ids = ids.concat(getAllCatIds(c.id));
+            });
+            return ids;
+        }
+
+        // Returns depth of a cat (root=0, sub=1, subsub=2)
+        function catDepth(id){
+            let d=0, c=state.cats.find(x=>x.id===id);
+            while(c && c.parent){ d++; c=state.cats.find(x=>x.id===c.parent); }
+            return d;
+        }
+
+        // Returns ancestor chain [root, level1, level2] for a given id
+        function ancestorChain(id){
+            let chain=[], c=state.cats.find(x=>x.id===id);
+            while(c){ chain.unshift(c); c=c.parent?state.cats.find(x=>x.id===c.parent):null; }
+            return chain;
+        }
+
+        function render(){
+            const subtitle = document.getElementById("subtitle-text");
+            if(subtitle) subtitle.innerText = "Let's manage your links.";
+
+            // ROOT PILLS
+            const pillsEl = document.getElementById("cat-pills");
+            const rootCats = state.cats.filter(c => !c.parent);
+            const chain = state.cur ? ancestorChain(state.cur) : [];
+            const rootActive = chain.length ? chain[0].id : null;
+
+            let counts={};
+            state.links.forEach(l=>counts[l.cat]=(counts[l.cat]||0)+1);
+            const allActive = state.cur===null;
+            let pillsHtml = `<div class="cat-list-item${allActive?' active':''}" onclick="selectCat(null)">
+                <div class="cat-list-inner">
+                    <span class="cat-list-icon">🔖</span>
+                    <span class="cat-list-name">All</span>
+                    <span class="cat-list-count">${state.links.length}</span>
+                </div>
+            </div>`;
+            rootCats.forEach(c => {
+                const active = state.cur===c.id || rootActive===c.id;
+                const cnt = (counts[c.id]||0);
+                pillsHtml += `<div class="cat-list-item${active?' active':''}" id="cli-${c.id}"
+                    onclick="selectCat('${c.id}')"
+                    ontouchstart="swipeStart(event,this)"
+                    ontouchmove="swipeMove(event,this)"
+                    ontouchend="swipeEnd(event,this)">
+                    <div class="cat-list-inner">
+                        <span class="cat-list-icon">${c.emoji||'📁'}</span>
+                        <span class="cat-list-name">${c.name}</span>
+                        <span class="cat-list-count">${cnt}</span>
+                    </div>
+                    <div class="cat-list-del" onclick="event.stopPropagation();deleteCatSwipe('${c.id}')">Delete</div>
+                </div>`;
+            });
+            pillsEl.innerHTML = pillsHtml;
+
+            // Links shown in detail-screen, not here
+        }
+
+        function renderBreadcrumb(){
+            const chain = ancestorChain(state.cur); // [root, ...parents, current]
+            let h = '<div style="display:flex;align-items:center;gap:4px;padding:8px 16px 6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex-wrap:nowrap">';
+            h += `<span onclick="selectCat(null)" style="font-size:12px;font-weight:600;color:#7B61FF;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent">All</span>`;
+            chain.forEach((c, i) => {
+                h += `<span style="font-size:12px;color:#C7C7CC;flex-shrink:0"> › </span>`;
+                const isLast = i === chain.length - 1;
+                h += `<span onclick="selectCat('${c.id}')" style="font-size:12px;font-weight:600;color:${isLast?'#1C1C1E':'#7B61FF'};cursor:${isLast?'default':'pointer'};white-space:nowrap;-webkit-tap-highlight-color:transparent">${c.emoji||''} ${c.name}</span>`;
+            });
+            h += '</div>';
+            return h;
+        }
+
+        function renderExplorerList(parentId, showCat, overrideLinks){
+            // subfolders of current
+            const subCats = parentId === null ? [] : state.cats.filter(c => c.parent === parentId);
+            // links in current (or all if parentId null)
+            const links = overrideLinks !== undefined ? overrideLinks : (parentId === null ? state.links : state.links.filter(l => l.cat === parentId));
+
+            if(!subCats.length && !links.length){
+                return `<div class="links-empty">Empty. Tap + to add.</div>`;
+            }
+
+            let h = '<div class="link-list">';
+
+            // FOLDERS FIRST
+            subCats.forEach(c => {
+                const count = state.links.filter(l => getAllCatIds(c.id).includes(l.cat)).length;
+                h += `<div class="link-row" ontouchstart="swipeStart(event,this)" ontouchmove="swipeMove(event,this)" ontouchend="swipeEnd(event,this)">
+                    <div class="link-row-del-bg" onclick="event.stopPropagation();deleteCatSwipe('${c.id}');navigateDetail(state.cur)">Delete</div>
+                    <div class="link-row-inner" onclick="navigateDetail('${c.id}')" style="cursor:pointer">
+                        <div class="link-thumb" style="background:#EDE8FF;border-radius:10px;font-size:24px;display:flex;align-items:center;justify-content:center">
+                            ${c.emoji||'📁'}
+                        </div>
+                        <div class="link-row-info">
+                            <div class="link-row-url" style="color:#1C1C1E">${c.name}</div>
+                            <div class="link-row-meta">${count} link${count!==1?'s':''}</div>
+                        </div>
+                        <div style="color:#C7C7CC;font-size:18px;padding-left:4px;flex-shrink:0">›</div>
+                    </div>
+                </div>`;
+            });
+
+            // LINKS AFTER
+            links.forEach(l => {
+                const t = getThumb(l.url);
+                const wa = "https://wa.me/?text=" + encodeURIComponent(l.url);
+                const cat = state.cats.find(c => c.id === l.cat);
+                h += `<div class="link-row" ontouchstart="swipeStart(event,this)" ontouchmove="swipeMove(event,this)" ontouchend="swipeEnd(event,this)">
+                    <div class="link-row-del-bg" onclick="event.stopPropagation();removeLinkAndRefresh(${l.id})">Delete</div>
+                    <div class="link-row-inner">
+                        <div class="link-thumb">
+                            <img src="${t}" loading="lazy" onerror="this.src='https://www.google.com/s2/favicons?domain=${domain(l.url)}&sz=128'" style="width:100%;height:100%;object-fit:cover">
+                        </div>
+                        <div class="link-row-info">
+                            <a class="link-row-url" href="${l.url}" target="_blank">${domain(l.url)}</a>
+                            ${l.note ? `<div class="link-row-note">${l.note}</div>` : ''}
+                            <div class="link-row-meta">${ago(l.date)}${showCat && cat ? ' · ' + cat.emoji + ' ' + cat.name : ''}</div>
+                        </div>
+                        <div class="link-row-actions">
+                            <button class="lbtn lbtn-wa" onclick="event.stopPropagation();shareLink('${l.url}')">${WA_SVG}</button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            h += '</div>';
+            return h;
+        }
+
+
+        function shareLink(url){
+            if(navigator.share){
+                navigator.share({ url: url }).catch(()=>{});
+            } else {
+                navigator.clipboard && navigator.clipboard.writeText(url);
+            }
+        }
+
+        function selectCat(id){
+            state.cur = id;
+            if(id === null){
+                // Recent — open detail screen with recent links
+                const recentLinks = state.links.slice(0, 10);
+                document.getElementById('detail-nav-title').textContent = '🕐 Recent';
+                document.getElementById('detail-content').innerHTML = recentLinks.length
+                    ? renderExplorerList(null, true, recentLinks)
+                    : '<div class="links-empty">No links yet.</div>';
+                document.getElementById('detail-screen').classList.add('open');
+            } else {
+                const cat = state.cats.find(c => c.id === id);
+                document.getElementById('detail-nav-title').textContent = (cat ? cat.emoji + ' ' + cat.name : '');
+                document.getElementById('detail-content').innerHTML = renderExplorerList(id, false);
+                document.getElementById('detail-screen').classList.add('open');
+            }
+        }
+
+
+        function navigateDetail(id){
+            state.cur = id;
+            const cat = state.cats.find(c => c.id === id);
+            document.getElementById('detail-nav-title').textContent = (cat ? cat.emoji + ' ' + cat.name : '');
+            document.getElementById('detail-content').innerHTML = renderExplorerList(id, false);
+            document.getElementById('detail-content').scrollTop = 0;
+        }
+
+        function closeDetail(){
+            document.getElementById('detail-screen').classList.remove('open');
+            state.cur = null;
+            render();
+        }
+
+        // --- MISMAS FUNCIONES LOGICAS ---
+
+        function openCat(id){ selectCat(id); }
+        
+        function goHome(){
+            closeDetail();
+        }
+
+        function openAdd(){
+            // Mismo generador de opciones
+            const opts = state.cats.map(c => `<option value="${c.id}" ${c.id===state.cur?'selected':''}>${c.emoji} ${c.name}</option>`).join("");
+            const sheet = document.getElementById("sheet");
+            sheet.style.display="block";
+            // Nuevo diseño CSS aplicado al Modal
+            sheet.innerHTML = `
+                <div class="sheet-bg" onclick="closeSheet()">
+                    <div class="sheet" onclick="event.stopPropagation()">
+                        <div class="recent-title" style="margin-bottom:20px; text-align:center;">Add New Link</div>
+                        <input id="url" class="input" placeholder="Paste link here (https://...)">
+                        <input id="note" class="input" placeholder="Note or description (optional)">
+                        <select id="cat-sel" class="select">${opts}</select>
+                        <button class="save" onclick="addLink()">Save to Vault</button>
+                    </div>
+                </div>`;
+            document.getElementById("url").focus();
+        }
+
+        function addLink(){
+            let url = document.getElementById("url").value.trim();
+            if(!url) return;
+            if(!/^https?:\/\//i.test(url)) url = "https://" + url;
+            const catId = document.getElementById("cat-sel").value;
+            state.links.unshift({
+                id: Date.now(),
+                url: url,
+                note: document.getElementById("note").value.trim(),
+                cat: catId,
+                date: Date.now()
+            });
+            saveState();
+            closeSheet();
+            render();
+            // Refresh detail screen if open
+            const screen = document.getElementById('detail-screen');
+            if(screen.classList.contains('open')){
+                navigateDetail(state.cur || catId);
+            }
+        }
+
+        let pickedIcon = "📁"; // Icono por defecto
+        let pickedGradient = "card-purple"; // Color por defecto
+
+        function openAddCategory(){
+            // Asignar color aleatorio de los 4 disponibles para la nueva carpeta
+            const grads = ["card-purple", "card-orange", "card-blue", "card-pink"];
+            pickedGradient = grads[Math.floor(Math.random() * grads.length)];
+            
+            const sheet = document.getElementById("sheet");
+            sheet.style.display="block";
+            // Adaptado con el generador de iconos antiguo
+            sheet.innerHTML = `
+                <div class="sheet-bg" onclick="closeSheet()">
+                    <div class="sheet" onclick="event.stopPropagation()">
+                        <div class="recent-title" style="margin-bottom:20px; text-align:center;">Create Folder</div>
+                        <input id="newcat-name" class="input" placeholder="Folder Name">
+                        <div class="icon-picker">${ICONS.map(i => `<div class="icon-item" onclick="pickIcon(this,'${i}')">${i}</div>`).join("")}</div>
+                        <button class="save" onclick="addCategory()">Create Folder</button>
+                    </div>
+                </div>`;
+            document.getElementById("newcat-name").focus();
+        }
+
+        function pickIcon(el, icon){
+            document.querySelectorAll(".icon-item").forEach(i => i.classList.remove("sel"));
+            el.classList.add("sel");
+            pickedIcon = icon; // Aunque en el diseño visual de carpeta usamos '📁' amarillo
+        }
+
+        function addCategory(){
+            const name = document.getElementById("newcat-name").value.trim();
+            if(!name) return;
+            state.cats.push({
+                id: "c" + Date.now(),
+                name: name,
+                emoji: pickedIcon || "📁",
+                grad: pickedGradient, // Color aleatorio asignado arriba
+                parent: state.cur // Mantiene lógica de subcategorías
+            });
+            saveState();
+            closeSheet();
+            render();
+        }
+
+        function deleteCategory(id, e){
+            e.stopPropagation(); // No abrir la categoría al borrar
+            if(!confirm("Delete this folder and ALL links inside?")) return;
+            state.cats = state.cats.filter(c => c.id !== id);
+            state.links = state.links.filter(l => l.cat !== id);
+            saveState();
+            render();
+        }
+
+        function removeLink(id){
+            state.links = state.links.filter(l => l.id !== id);
+            saveState();
+            render();
+        }
+        function removeLinkAndRefresh(id){
+            state.links = state.links.filter(l => l.id !== id);
+            saveState();
+            render();
+            const screen = document.getElementById('detail-screen');
+            if(screen.classList.contains('open') && state.cur !== null){
+                navigateDetail(state.cur);
+            } else if(screen.classList.contains('open')){
+                const recentLinks = state.links.slice(0,10);
+                document.getElementById('detail-content').innerHTML = recentLinks.length
+                    ? renderExplorerList(null, true, recentLinks)
+                    : '<div class="links-empty">No links yet.</div>';
+            }
+        }
+
+        function closeSheet(){ document.getElementById("sheet").style.display="none"; }
+
+        // Mismo Inicio
+        applySettings();
+        render();
+    </script>
+    <script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/linkvault/sw.js');
+}
+</script>
+</body>
+</html>
