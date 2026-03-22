@@ -370,15 +370,20 @@
 </div>
 
 <nav class="nav-bar">
-    <div class="nav-item active" onclick="goHome()">
+    <div class="nav-item" onclick="goHome()">
         <div class="nav-icon">🏠</div>
     </div>
-    <div class="nav-item" onclick="openAddCategory()">
-        <div class="nav-icon">📁<span style="font-size:13px;line-height:1;vertical-align:top">＋</span></div>
+
+    <div class="nav-item" onclick="openAddCategory()" style="position:relative">
+        <div class="nav-icon">📁</div>
+        <div style="position:absolute;top:2px;right:18px;width:16px;height:16px;border-radius:50%;background:#FF5E78;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1">+</div>
     </div>
-    <div class="nav-item" onclick="openAdd()">
-        <div class="nav-icon">🔗<span style="font-size:13px;line-height:1;vertical-align:top">＋</span></div>
+
+    <div class="nav-item" onclick="openAdd()" style="position:relative">
+        <div class="nav-icon">🔗</div>
+        <div style="position:absolute;top:2px;right:18px;width:16px;height:16px;border-radius:50%;background:#7B61FF;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1">+</div>
     </div>
+
     <div class="nav-item">
         <div class="nav-icon">👤</div>
     </div>
