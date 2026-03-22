@@ -286,24 +286,23 @@
         .order-name { font-size:15px;font-weight:600;color:#1C1C1E;flex:1; }
 
         /* DEFAULT = LARGE */
-        .cat-list-item { padding:15px 16px; }
-        .cat-list-icon { font-size:30px;width:40px; }
-        .cat-list-name { font-size:17px; }
-        .cat-list-count { font-size:14px; }
+        .cat-list-item { display:flex;align-items:center;gap:12px;padding:15px 16px;border-radius:12px;cursor:pointer;position:relative;overflow:hidden;transition:background 0.15s;-webkit-tap-highlight-color:transparent;touch-action:pan-y; }
+        .cat-list-item.active { background:#EDE8FF; }
+        .cat-list-item:not(.active):active { background:#F2F2F7; }
+        .cat-list-icon { font-size:30px;flex-shrink:0;width:40px;text-align:center; }
+        .cat-list-name { font-size:17px;font-weight:600;color:#1C1C1E;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .cat-list-item.active .cat-list-name { color:#7B61FF; }
+        .cat-list-count { font-size:14px;font-weight:600;color:#C7C7CC;flex-shrink:0; }
+        .cat-list-item.active .cat-list-count { color:#7B61FF; }
+        .cat-list-inner { display:flex;align-items:center;gap:12px;width:100%; }
+        .cat-list-del { position:absolute;right:0;top:0;bottom:0;width:80px;background:#FF3B30;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;border-radius:0 12px 12px 0;opacity:0;transition:opacity 0.25s;pointer-events:none; }
+        .cat-list-item.swiped .cat-list-del { opacity:1;pointer-events:auto; }
 
-        /* SMALL ICONS MODE (toggle en settings) */
-        body.small-icons .cat-pill-box { width:52px;height:52px;font-size:24px;border-radius:14px; }
-        body.small-icons .cat-pill-label { font-size:10px;max-width:56px; }
-        body.small-icons .cat-pills { gap:8px; }
+        /* SMALL ICONS MODE */
         body.small-icons .cat-list-item { padding:11px 14px; }
         body.small-icons .cat-list-icon { font-size:22px;width:32px; }
         body.small-icons .cat-list-name { font-size:14px; }
         body.small-icons .cat-list-count { font-size:12px; }
-        body.small-icons .link-row-inner { padding:10px 0; }
-        body.small-icons .link-thumb { width:56px;height:40px; }
-        body.small-icons .link-row-url { font-size:13px; }
-        body.small-icons .link-row-note { font-size:11px; }
-        body.small-icons .link-row-meta { font-size:10px; }
 
 
         /* CATEGORY SIDEBAR LIST */
