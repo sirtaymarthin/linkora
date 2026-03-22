@@ -1,5 +1,5 @@
 const CACHE = 'lv-v100';
-const FILES = ['/linkvault/', '/linkvault/index.html'];
+const FILES = ['/linkora/', '/linkora/index.html'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
