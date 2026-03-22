@@ -657,11 +657,12 @@
         let counts={};
         state.links.forEach(l=>counts[l.cat]=(counts[l.cat]||0)+1);
         const allActive = state.cur===null;
+        const recentCount = Math.min(state.links.length, 10);
         let pillsHtml = `<div class="cat-list-item${allActive?' active':''}" onclick="selectCat(null)">
             <div class="cat-list-inner">
-                <span class="cat-list-icon">🔖</span>
-                <span class="cat-list-name">All</span>
-                <span class="cat-list-count">${state.links.length}</span>
+                <span class="cat-list-icon">🕐</span>
+                <span class="cat-list-name">Recent</span>
+                <span class="cat-list-count">${recentCount}</span>
             </div>
         </div>`;
         rootCats.forEach(c => {
@@ -773,16 +774,14 @@
         if(id === null){
             // Recent — open detail screen with recent links
             const recentLinks = state.links.slice(0, 10);
-            document.getElementById('detail-nav-title').textContent = '🕐 Recent';
+            document.getElementById('detail-nav-title').innerHTML = '<span style="font-size:22px;margin-right:6px;vertical-align:middle">🕐</span><span style="vertical-align:middle">Recent</span>';
             document.getElementById('detail-content').innerHTML = recentLinks.length
                 ? renderExplorerList(null, true, recentLinks)
                 : '<div class="links-empty">No links yet.</div>';
             document.getElementById('detail-screen').classList.add('open');
         } else {
-            const cat = state.cats.find(c => c.id === id);
-            document.getElementById('detail-nav-title').textContent = (cat ? cat.emoji + ' ' + cat.name : '');
-            document.getElementById('detail-content').innerHTML = renderExplorerList(id, false);
             document.getElementById('detail-screen').classList.add('open');
+            navigateDetail(id);
         }
     }
 
@@ -790,7 +789,13 @@
     function navigateDetail(id){
         state.cur = id;
         const cat = state.cats.find(c => c.id === id);
-        document.getElementById('detail-nav-title').textContent = (cat ? cat.emoji + ' ' + cat.name : '');
+        if(cat){
+            const isDefault = DEFAULT_CATS.some(d => d.id === cat.id);
+            const emojiSize = isDefault ? '22px' : '16px';
+            document.getElementById('detail-nav-title').innerHTML =
+                '<span style="font-size:' + emojiSize + ';margin-right:6px;vertical-align:middle">' + (cat.emoji||'📁') + '</span>' +
+                '<span style="vertical-align:middle">' + cat.name + '</span>';
+        }
         document.getElementById('detail-content').innerHTML = renderExplorerList(id, false);
         document.getElementById('detail-content').scrollTop = 0;
     }
