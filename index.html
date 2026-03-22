@@ -606,17 +606,21 @@
     // SEARCH
     function searchLinks(q){
         q = q.toLowerCase().trim();
-        if(!q){ render(); return; }
-        const linksWrap = document.getElementById('links-wrap');
+        if(!q){
+            document.getElementById('detail-screen').classList.remove('open');
+            return;
+        }
         const results = state.links.filter(l =>
             l.url.toLowerCase().includes(q) ||
             (l.note && l.note.toLowerCase().includes(q))
         );
-        if(!results.length){
-            linksWrap.innerHTML = '<div class="links-empty">No results found.</div>';
-            return;
-        }
-        linksWrap.innerHTML = renderExplorerList(null, true, results);
+        document.getElementById('detail-nav-title').innerHTML =
+            '<span style="font-size:22px;margin-right:6px;vertical-align:middle">🔍</span>' +
+            '<span style="vertical-align:middle">' + results.length + ' result' + (results.length!==1?'s':'') + '</span>';
+        document.getElementById('detail-content').innerHTML = results.length
+            ? renderExplorerList(null, true, results)
+            : '<div class="links-empty">No results for &quot;' + q + '&quot;</div>';
+        document.getElementById('detail-screen').classList.add('open');
     }
 
     const WA_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7B61FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';
