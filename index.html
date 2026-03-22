@@ -286,23 +286,24 @@
         .order-name { font-size:15px;font-weight:600;color:#1C1C1E;flex:1; }
 
         /* DEFAULT = LARGE */
-        .cat-list-item { display:flex;align-items:center;gap:12px;padding:15px 16px;border-radius:12px;cursor:pointer;position:relative;overflow:hidden;transition:background 0.15s;-webkit-tap-highlight-color:transparent;touch-action:pan-y; }
-        .cat-list-item.active { background:#EDE8FF; }
-        .cat-list-item:not(.active):active { background:#F2F2F7; }
-        .cat-list-icon { font-size:30px;flex-shrink:0;width:40px;text-align:center; }
-        .cat-list-name { font-size:17px;font-weight:600;color:#1C1C1E;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-        .cat-list-item.active .cat-list-name { color:#7B61FF; }
-        .cat-list-count { font-size:14px;font-weight:600;color:#C7C7CC;flex-shrink:0; }
-        .cat-list-item.active .cat-list-count { color:#7B61FF; }
-        .cat-list-inner { display:flex;align-items:center;gap:12px;width:100%; }
-        .cat-list-del { position:absolute;right:0;top:0;bottom:0;width:80px;background:#FF3B30;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;border-radius:0 12px 12px 0;opacity:0;transition:opacity 0.25s;pointer-events:none; }
-        .cat-list-item.swiped .cat-list-del { opacity:1;pointer-events:auto; }
+        .cat-list-item { padding:15px 16px; }
+        .cat-list-icon { font-size:30px;width:40px; }
+        .cat-list-name { font-size:17px; }
+        .cat-list-count { font-size:14px; }
 
-        /* SMALL ICONS MODE */
+        /* SMALL ICONS MODE (toggle en settings) */
+        body.small-icons .cat-pill-box { width:52px;height:52px;font-size:24px;border-radius:14px; }
+        body.small-icons .cat-pill-label { font-size:10px;max-width:56px; }
+        body.small-icons .cat-pills { gap:8px; }
         body.small-icons .cat-list-item { padding:11px 14px; }
         body.small-icons .cat-list-icon { font-size:22px;width:32px; }
         body.small-icons .cat-list-name { font-size:14px; }
         body.small-icons .cat-list-count { font-size:12px; }
+        body.small-icons .link-row-inner { padding:10px 0; }
+        body.small-icons .link-thumb { width:56px;height:40px; }
+        body.small-icons .link-row-url { font-size:13px; }
+        body.small-icons .link-row-note { font-size:11px; }
+        body.small-icons .link-row-meta { font-size:10px; }
 
 
         /* CATEGORY SIDEBAR LIST */
@@ -336,6 +337,23 @@
         .detail-back { width:36px;height:36px;border-radius:10px;background:#F2F2F7;border:none;font-size:22px;font-weight:700;color:#7B61FF;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
         .detail-nav-title { font-size:17px;font-weight:700;color:#1C1C1E;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
         .detail-content { flex:1; padding-bottom:100px; }
+
+
+        /* AUTH SCREEN */
+        .auth-screen { display:none; position:fixed; inset:0; background:#F7F9FC; z-index:300; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+        .auth-screen.open { display:flex; }
+        .auth-logo { font-size:48px; margin-bottom:8px; }
+        .auth-title { font-size:28px; font-weight:800; color:#1C1C1E; margin-bottom:4px; }
+        .auth-sub { font-size:14px; color:#8E8E93; margin-bottom:32px; }
+        .auth-box { width:100%; max-width:360px; }
+        .auth-tabs { display:flex; background:#F2F2F7; border-radius:12px; padding:4px; margin-bottom:20px; }
+        .auth-tab { flex:1; padding:10px; border:none; border-radius:9px; background:transparent; font-size:14px; font-weight:600; color:#8E8E93; cursor:pointer; }
+        .auth-tab.on { background:#fff; color:#7B61FF; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+        .auth-err { font-size:13px; color:#FF3B30; margin-top:-6px; margin-bottom:10px; min-height:18px; }
+        .auth-divider { display:flex; align-items:center; gap:10px; margin:16px 0; color:#C7C7CC; font-size:13px; }
+        .auth-divider::before,.auth-divider::after { content:''; flex:1; height:1px; background:#EAEAEA; }
+        .auth-google { width:100%; padding:14px; border:1.5px solid #EAEAEA; border-radius:14px; background:#fff; font-size:15px; font-weight:600; color:#1C1C1E; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; }
+        .auth-google:active { background:#F2F2F7; }
 
     </style>
 </head>
@@ -413,6 +431,16 @@
         </div>
     </div>
     <div class="settings-section" style="margin-top:8px">
+        <div class="settings-section-title">Account</div>
+        <div class="settings-row">
+            <div class="settings-row-info">
+                <div class="settings-row-label" id="settings-user-email">Not signed in</div>
+                <div class="settings-row-sub">Signed in account</div>
+            </div>
+            <button onclick="doLogout()" style="padding:8px 16px;border-radius:10px;border:none;background:#FFF0F0;color:#FF3B30;font-weight:700;cursor:pointer;font-size:13px">Sign out</button>
+        </div>
+    </div>
+    <div class="settings-section" style="margin-top:8px">
         <div class="settings-section-title">Reorder categories</div>
         <div class="order-list" id="order-list"></div>
     </div>
@@ -421,61 +449,158 @@
 <div id="sheet" style="display:none"></div>
 
 
+<!-- AUTH SCREEN -->
+<div class="auth-screen" id="auth-screen">
+    <div class="safe"></div>
+    <div class="auth-logo">🔗</div>
+    <div class="auth-title">Linkora</div>
+    <div class="auth-sub">Save and organize your links</div>
+    <div class="auth-box">
+        <div class="auth-tabs">
+            <button class="auth-tab on" id="auth-tab-login" onclick="switchAuthTab('login')">Sign in</button>
+            <button class="auth-tab" id="auth-tab-reg" onclick="switchAuthTab('register')">Register</button>
+        </div>
+
+        <!-- LOGIN -->
+        <div id="auth-login">
+            <input id="login-email" class="input" type="email" placeholder="Email" autocomplete="email">
+            <input id="login-pass" class="input" type="password" placeholder="Password" autocomplete="current-password">
+            <div class="auth-err" id="login-err"></div>
+            <button class="save" onclick="doLogin()">Sign in</button>
+            <div class="auth-divider">or</div>
+            <button class="auth-google" onclick="doGoogleLogin()">
+                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Continue with Google
+            </button>
+        </div>
+
+        <!-- REGISTER -->
+        <div id="auth-register" style="display:none">
+            <input id="reg-email" class="input" type="email" placeholder="Email" autocomplete="email">
+            <input id="reg-pass" class="input" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password">
+            <div class="auth-err" id="reg-err"></div>
+            <button class="save" onclick="doRegister()">Create account</button>
+            <div class="auth-divider">or</div>
+            <button class="auth-google" onclick="doGoogleLogin()">
+                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Continue with Google
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+    // ── SUPABASE ──────────────────────────────────────────────────────────────────
+    const SB_URL = 'https://nskdklncdajsfpwngqqx.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5za2RrbG5jZGFqc2Zwd25ncXF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyMDM2MDksImV4cCI6MjA4OTc3OTYwOX0.D9VcFUED_2tGna2_FTjFvTAfeOq2h8411Vbg2F3yRl8';
+    const sb = supabase.createClient(SB_URL, SB_KEY);
+
+    // ── CONSTANTS ─────────────────────────────────────────────────────────────────
     const DEFAULT_CATS=[
-        {id:"music",name:"Music",emoji:"🎵",grad:"card-purple",parent: null},
-        {id:"videos",name:"Recipes",emoji:"🍳",grad:"card-orange",parent: null},
-        {id:"recipes",name:"Videos",emoji:"🎬",grad:"card-blue",parent: null},
-        {id:"sports",name:"Documents",emoji:"📚",grad:"card-pink",parent: null},
-        {id:"movies",name:"Sports",emoji:"⚽",grad:"card-pink",parent: null}
+        {id:"music",name:"Music",emoji:"🎵",grad:"card-purple",parent:null},
+        {id:"videos",name:"Recipes",emoji:"🍳",grad:"card-orange",parent:null},
+        {id:"recipes",name:"Videos",emoji:"🎬",grad:"card-blue",parent:null},
+        {id:"sports",name:"Documents",emoji:"📚",grad:"card-pink",parent:null},
+        {id:"movies",name:"Sports",emoji:"⚽",grad:"card-pink",parent:null}
     ];
-
-    // Mismo array de iconos
     const ICONS=["🎵","🎬","🍳","⚽","💡","✈️","📚","💻","🎮","🎧","📸","⭐","🧠","🏠","🚗","🛍️","🍔","🎨","📱","🧳","🏋️","🎤","📺","📰","💰","🧪","🌍","🐶","🌟","🔥"];
-    const SK_LINKS="lv_links", SK_CATS="lv_cats";
 
-    // Mismo Estado y LocalStorage
-    let state = {
-        links: JSON.parse(localStorage.getItem(SK_LINKS)) || [],
-        cats: JSON.parse(localStorage.getItem(SK_CATS)) || DEFAULT_CATS,
-        cur: null
-    };
+    // ── STATE ─────────────────────────────────────────────────────────────────────
+    let state = { links:[], cats:[], cur:null, user:null };
 
-    function saveState(){
-        localStorage.setItem(SK_LINKS, JSON.stringify(state.links));
-        localStorage.setItem(SK_CATS, JSON.stringify(state.cats));
+    // ── AUTH ──────────────────────────────────────────────────────────────────────
+    function showAuth(tab='login'){
+        document.getElementById('auth-screen').classList.add('open');
+        switchAuthTab(tab);
+    }
+    function hideAuth(){
+        document.getElementById('auth-screen').classList.remove('open');
+    }
+    function switchAuthTab(tab){
+        document.getElementById('auth-login').style.display = tab==='login'?'block':'none';
+        document.getElementById('auth-register').style.display = tab==='register'?'block':'none';
+        document.getElementById('auth-tab-login').classList.toggle('on', tab==='login');
+        document.getElementById('auth-tab-reg').classList.toggle('on', tab==='register');
     }
 
-    // Mismas utilidades
+    async function doLogin(){
+        const email = document.getElementById('login-email').value.trim();
+        const pass  = document.getElementById('login-pass').value;
+        const err   = document.getElementById('login-err');
+        err.textContent = '';
+        const {error} = await sb.auth.signInWithPassword({email, password:pass});
+        if(error) err.textContent = error.message;
+    }
+
+    async function doRegister(){
+        const email = document.getElementById('reg-email').value.trim();
+        const pass  = document.getElementById('reg-pass').value;
+        const err   = document.getElementById('reg-err');
+        err.textContent = '';
+        const {error} = await sb.auth.signUp({email, password:pass});
+        if(error) err.textContent = error.message;
+        else err.style.color='#25D366', err.textContent = 'Check your email to confirm!';
+    }
+
+    async function doGoogleLogin(){
+        await sb.auth.signInWithOAuth({
+            provider:'google',
+            options:{ redirectTo: window.location.href }
+        });
+    }
+
+    async function doLogout(){
+        await sb.auth.signOut();
+        state.user = null;
+        state.links = [];
+        state.cats = [];
+        render();
+        showAuth();
+    }
+
+    // ── DATA ──────────────────────────────────────────────────────────────────────
+    async function loadData(){
+        const [catsRes, linksRes] = await Promise.all([
+            sb.from('categories').select('*').order('position'),
+            sb.from('links').select('*').order('created_at', {ascending:false})
+        ]);
+        state.cats  = (catsRes.data||[]).map(c=>({
+            id: c.id, name: c.name, emoji: c.emoji,
+            grad: c.grad||'card-purple', parent: c.parent_id||null
+        }));
+        state.links = (linksRes.data||[]).map(l=>({
+            id: l.id, url: l.url, note: l.note||'',
+            cat: l.category_id, date: new Date(l.created_at).getTime()
+        }));
+        render();
+    }
+
+    async function saveState(){
+        // no-op: saves happen individually per action
+    }
+
+    // ── UTILS ─────────────────────────────────────────────────────────────────────
     function domain(u){ try{return new URL(u).hostname.replace("www.","")}catch{return u} }
     function ago(t){
         let m=Math.floor((Date.now()-t)/60000);
-        if(m<1)return "now";
-        if(m<60)return m+"m";
+        if(m<1)return "now"; if(m<60)return m+"m";
         let h=Math.floor(m/60);
-        return h<24 ? h+"h" : Math.floor(h/24)+"d";
+        return h<24?h+"h":Math.floor(h/24)+"d";
     }
-
     function getThumb(url){
         let yt=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
         if(yt) return "https://img.youtube.com/vi/"+yt[1]+"/hqdefault.jpg";
         return "https://api.microlink.io/?url="+encodeURIComponent(url)+"&meta=true&embed=image.url";
     }
 
-
-
-    // SETTINGS
-    const SK_SETTINGS = 'lv_settings';
-    let settings = JSON.parse(localStorage.getItem(SK_SETTINGS)) || { largeIcons: true };
-
-    function saveSettings(){ localStorage.setItem(SK_SETTINGS, JSON.stringify(settings)); }
-
-    function toggleLargeIcons(){
-        settings.largeIcons = !settings.largeIcons;
-        saveSettings();
-        applySettings();
-    }
-
+    // ── SETTINGS ──────────────────────────────────────────────────────────────────
+    const SK_SETTINGS='lv_settings';
+    let settings=JSON.parse(localStorage.getItem(SK_SETTINGS))||{largeIcons:true};
+    function saveSettings(){ localStorage.setItem(SK_SETTINGS,JSON.stringify(settings)); }
+    function toggleLargeIcons(){ settings.largeIcons=!settings.largeIcons; saveSettings(); applySettings(); }
     function applySettings(){
         if(settings.largeIcons){
             document.body.classList.remove('small-icons');
@@ -485,197 +610,113 @@
             document.getElementById('toggle-large').classList.remove('on');
         }
     }
-
     function openSettings(){
         document.getElementById('settings-panel').classList.add('open');
         applySettings();
         renderOrderList();
+        const emailEl = document.getElementById('settings-user-email');
+        if(emailEl && state.user) emailEl.textContent = state.user.email;
     }
+    function closeSettings(){ document.getElementById('settings-panel').classList.remove('open'); render(); }
 
-    function closeSettings(){
-        document.getElementById('settings-panel').classList.remove('open');
-        render();
-    }
-
-    // DRAG & DROP REORDER
-    let dragSrc = null;
-
+    // ── DRAG & DROP ───────────────────────────────────────────────────────────────
+    let dragSrc=null;
     function renderOrderList(){
-        const rootCats = state.cats.filter(c => !c.parent);
-        const el = document.getElementById('order-list');
-        el.innerHTML = rootCats.map((c,i) => `
-            <div class="order-item" draggable="true"
-                data-id="${c.id}"
-                ontouchstart="touchStart(event,this)"
-                ontouchmove="touchMove(event)"
-                ontouchend="touchEnd(event)"
-                ondragstart="dragStart(event,this)"
-                ondragover="dragOver(event,this)"
-                ondrop="dragDrop(event,this)"
-                ondragend="dragEnd()">
+        const rootCats=state.cats.filter(c=>!c.parent);
+        const el=document.getElementById('order-list');
+        el.innerHTML=rootCats.map((c,i)=>`
+            <div class="order-item" draggable="true" data-id="${c.id}"
+                ontouchstart="touchStart(event,this)" ontouchmove="touchMove(event)" ontouchend="touchEnd(event)"
+                ondragstart="dragStart(event,this)" ondragover="dragOver(event,this)"
+                ondrop="dragDrop(event,this)" ondragend="dragEnd()">
                 <span class="order-drag-handle">☰</span>
                 <span class="order-emoji">${c.emoji||'📁'}</span>
                 <span class="order-name">${c.name}</span>
             </div>`).join('');
     }
-
-    function dragStart(e, el){ dragSrc = el; el.classList.add('dragging'); }
-    function dragOver(e, el){ e.preventDefault(); document.querySelectorAll('.order-item').forEach(i=>i.classList.remove('dragover')); el.classList.add('dragover'); }
+    function dragStart(e,el){ dragSrc=el; el.classList.add('dragging'); }
+    function dragOver(e,el){ e.preventDefault(); document.querySelectorAll('.order-item').forEach(i=>i.classList.remove('dragover')); el.classList.add('dragover'); }
     function dragEnd(){ document.querySelectorAll('.order-item').forEach(i=>{i.classList.remove('dragging');i.classList.remove('dragover');}); }
-    function dragDrop(e, el){
+    async function dragDrop(e,el){
         e.preventDefault();
-        if(!dragSrc || dragSrc===el) return;
-        const fromId = dragSrc.dataset.id;
-        const toId = el.dataset.id;
-        const fromIdx = state.cats.findIndex(c=>c.id===fromId);
-        const toIdx = state.cats.findIndex(c=>c.id===toId);
-        const [moved] = state.cats.splice(fromIdx,1);
+        if(!dragSrc||dragSrc===el) return;
+        const fromIdx=state.cats.findIndex(c=>c.id===dragSrc.dataset.id);
+        const toIdx=state.cats.findIndex(c=>c.id===el.dataset.id);
+        const [moved]=state.cats.splice(fromIdx,1);
         state.cats.splice(toIdx,0,moved);
-        saveState();
+        // update positions in DB
+        await Promise.all(state.cats.filter(c=>!c.parent).map((c,i)=>
+            sb.from('categories').update({position:i}).eq('id',c.id)
+        ));
         renderOrderList();
     }
-
-    // Touch drag support
-    let touchItem=null, touchClone=null, touchStartY=0;
+    let touchItem=null,touchStartY=0;
     function touchStart(e,el){ touchItem=el; touchStartY=e.touches[0].clientY; }
     function touchMove(e){
-        if(!touchItem) return;
-        e.preventDefault();
-        const y = e.touches[0].clientY;
-        const items = [...document.querySelectorAll('.order-item')];
+        if(!touchItem) return; e.preventDefault();
+        const y=e.touches[0].clientY;
+        const items=[...document.querySelectorAll('.order-item')];
         items.forEach(i=>i.classList.remove('dragover'));
-        const target = items.find(i=>{
-            const r=i.getBoundingClientRect();
-            return y>=r.top && y<=r.bottom && i!==touchItem;
-        });
+        const target=items.find(i=>{ const r=i.getBoundingClientRect(); return y>=r.top&&y<=r.bottom&&i!==touchItem; });
         if(target) target.classList.add('dragover');
     }
     function touchEnd(e){
         if(!touchItem) return;
-        const items = [...document.querySelectorAll('.order-item')];
-        const target = items.find(i=>i.classList.contains('dragover'));
-        if(target && target!==touchItem){
-            const fromId=touchItem.dataset.id, toId=target.dataset.id;
-            const fromIdx=state.cats.findIndex(c=>c.id===fromId);
-            const toIdx=state.cats.findIndex(c=>c.id===toId);
-            const [moved]=state.cats.splice(fromIdx,1);
-            state.cats.splice(toIdx,0,moved);
-            saveState();
-            renderOrderList();
+        const items=[...document.querySelectorAll('.order-item')];
+        const target=items.find(i=>i.classList.contains('dragover'));
+        if(target&&target!==touchItem){
+            dragSrc=touchItem;
+            dragDrop({preventDefault:()=>{}}, target);
         }
         items.forEach(i=>i.classList.remove('dragover'));
         touchItem=null;
     }
 
+    // ── SWIPE ─────────────────────────────────────────────────────────────────────
+    let swipeStartX=0,swipeStartY=0,swipeMoved=false;
+    function swipeStart(e,el){ swipeStartX=e.touches[0].clientX; swipeStartY=e.touches[0].clientY; swipeMoved=false; }
+    function swipeMove(e,el){
+        const dx=e.touches[0].clientX-swipeStartX;
+        const dy=e.touches[0].clientY-swipeStartY;
+        if(Math.abs(dy)>Math.abs(dx)) return;
+        if(dx<-30){ swipeMoved=true; e.preventDefault(); document.querySelectorAll('.cat-list-item.swiped,.link-row.swiped').forEach(i=>{if(i!==el)i.classList.remove('swiped')}); el.classList.add('swiped'); }
+        else if(dx>10){ swipeMoved=true; el.classList.remove('swiped'); }
+    }
+    function swipeEnd(e,el){ if(!swipeMoved&&el.classList.contains('swiped')) el.classList.remove('swiped'); }
 
-    // SWIPE TO DELETE
-    let swipeStartX = 0, swipeStartY = 0, swipeMoved = false;
-    function swipeStart(e, el){
-        swipeStartX = e.touches[0].clientX;
-        swipeStartY = e.touches[0].clientY;
-        swipeMoved = false;
-    }
-    function swipeMove(e, el){
-        const dx = e.touches[0].clientX - swipeStartX;
-        const dy = e.touches[0].clientY - swipeStartY;
-        if(Math.abs(dy) > Math.abs(dx)) return; // vertical scroll, ignore
-        if(dx < -30){
-            swipeMoved = true;
-            e.preventDefault();
-            document.querySelectorAll('.cat-list-item.swiped').forEach(i=>{ if(i!==el) i.classList.remove('swiped'); });
-            el.classList.add('swiped');
-        } else if(dx > 10){
-            swipeMoved = true;
-            el.classList.remove('swiped');
-        }
-    }
-    function swipeEnd(e, el){
-        // if barely moved, treat as tap - close any open swipe
-        if(!swipeMoved && el.classList.contains('swiped')){
-            el.classList.remove('swiped');
-        }
-    }
-    function deleteCatSwipe(id){
-        state.cats = state.cats.filter(c => c.id !== id);
-        state.links = state.links.filter(l => l.cat !== id);
-        saveState();
-        render();
-    }
-
-    // SEARCH
+    // ── SEARCH ────────────────────────────────────────────────────────────────────
     function searchLinks(q){
-        q = q.toLowerCase().trim();
-        if(!q){
-            document.getElementById('detail-screen').classList.remove('open');
-            return;
-        }
-        const results = state.links.filter(l =>
-            l.url.toLowerCase().includes(q) ||
-            (l.note && l.note.toLowerCase().includes(q))
-        );
-        document.getElementById('detail-nav-title').innerHTML =
-            '<span style="font-size:22px;margin-right:6px;vertical-align:middle">🔍</span>' +
-            '<span style="vertical-align:middle">' + results.length + ' result' + (results.length!==1?'s':'') + '</span>';
-        document.getElementById('detail-content').innerHTML = results.length
-            ? renderExplorerList(null, true, results)
-            : '<div class="links-empty">No results for &quot;' + q + '&quot;</div>';
+        q=q.toLowerCase().trim();
+        if(!q){ document.getElementById('detail-screen').classList.remove('open'); return; }
+        const results=state.links.filter(l=>l.url.toLowerCase().includes(q)||(l.note&&l.note.toLowerCase().includes(q)));
+        document.getElementById('detail-nav-title').innerHTML='<span style="font-size:22px;margin-right:6px;vertical-align:middle">🔍</span><span style="vertical-align:middle">'+results.length+' result'+(results.length!==1?'s':'')+'</span>';
+        document.getElementById('detail-content').innerHTML=results.length?renderExplorerList(null,true,results):'<div class="links-empty">No results for &quot;'+q+'&quot;</div>';
         document.getElementById('detail-screen').classList.add('open');
     }
 
-    const WA_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7B61FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';
+    // ── SVG ───────────────────────────────────────────────────────────────────────
+    const WA_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7B61FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';
 
-    // Get all descendant cat ids (cat + all subcats recursively)
-    function getAllCatIds(id){
-        let ids = [id];
-        state.cats.filter(c => c.parent === id).forEach(c => {
-            ids = ids.concat(getAllCatIds(c.id));
-        });
-        return ids;
-    }
-
-    // Returns depth of a cat (root=0, sub=1, subsub=2)
-    function catDepth(id){
-        let d=0, c=state.cats.find(x=>x.id===id);
-        while(c && c.parent){ d++; c=state.cats.find(x=>x.id===c.parent); }
-        return d;
-    }
-
-    // Returns ancestor chain [root, level1, level2] for a given id
-    function ancestorChain(id){
-        let chain=[], c=state.cats.find(x=>x.id===id);
-        while(c){ chain.unshift(c); c=c.parent?state.cats.find(x=>x.id===c.parent):null; }
-        return chain;
-    }
+    // ── RENDER ────────────────────────────────────────────────────────────────────
+    function getAllCatIds(id){ let ids=[id]; state.cats.filter(c=>c.parent===id).forEach(c=>{ids=ids.concat(getAllCatIds(c.id));}); return ids; }
+    function ancestorChain(id){ let chain=[],c=state.cats.find(x=>x.id===id); while(c){chain.unshift(c);c=c.parent?state.cats.find(x=>x.id===c.parent):null;} return chain; }
 
     function render(){
-        const subtitle = document.getElementById("subtitle-text");
-        if(subtitle) subtitle.innerText = "Let's manage your links.";
-
-        // ROOT PILLS
-        const pillsEl = document.getElementById("cat-pills");
-        const rootCats = state.cats.filter(c => !c.parent);
-        const chain = state.cur ? ancestorChain(state.cur) : [];
-        const rootActive = chain.length ? chain[0].id : null;
-
+        const pillsEl=document.getElementById('cat-pills');
+        const rootCats=state.cats.filter(c=>!c.parent);
         let counts={};
         state.links.forEach(l=>counts[l.cat]=(counts[l.cat]||0)+1);
-        const allActive = state.cur===null;
-        const recentCount = Math.min(state.links.length, 10);
-        let pillsHtml = `<div class="cat-list-item${allActive?' active':''}" onclick="selectCat(null)">
-            <div class="cat-list-inner">
-                <span class="cat-list-icon">🕐</span>
-                <span class="cat-list-name">Recent</span>
-                <span class="cat-list-count">${recentCount}</span>
-            </div>
+        const recentCount=Math.min(state.links.length,10);
+        let html=`<div class="cat-list-item${state.cur===null?' active':''}" onclick="selectCat(null)">
+            <div class="cat-list-inner"><span class="cat-list-icon">🕐</span><span class="cat-list-name">Recent</span><span class="cat-list-count">${recentCount}</span></div>
         </div>`;
-        rootCats.forEach(c => {
-            const active = state.cur===c.id || rootActive===c.id;
-            const cnt = (counts[c.id]||0);
-            pillsHtml += `<div class="cat-list-item${active?' active':''}" id="cli-${c.id}"
+        rootCats.forEach(c=>{
+            const chain=state.cur?ancestorChain(state.cur):[];
+            const active=state.cur===c.id||(chain.length&&chain[0].id===c.id);
+            const cnt=counts[c.id]||0;
+            html+=`<div class="cat-list-item${active?' active':''}" id="cli-${c.id}"
                 onclick="selectCat('${c.id}')"
-                ontouchstart="swipeStart(event,this)"
-                ontouchmove="swipeMove(event,this)"
-                ontouchend="swipeEnd(event,this)">
+                ontouchstart="swipeStart(event,this)" ontouchmove="swipeMove(event,this)" ontouchend="swipeEnd(event,this)">
                 <div class="cat-list-inner">
                     <span class="cat-list-icon">${c.emoji||'📁'}</span>
                     <span class="cat-list-name">${c.name}</span>
@@ -684,45 +725,20 @@
                 <div class="cat-list-del" onclick="event.stopPropagation();deleteCatSwipe('${c.id}')">Delete</div>
             </div>`;
         });
-        pillsEl.innerHTML = pillsHtml;
-
-        // Links shown in detail-screen, not here
+        pillsEl.innerHTML=html;
     }
 
-    function renderBreadcrumb(){
-        const chain = ancestorChain(state.cur); // [root, ...parents, current]
-        let h = '<div style="display:flex;align-items:center;gap:4px;padding:8px 16px 6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex-wrap:nowrap">';
-        h += `<span onclick="selectCat(null)" style="font-size:12px;font-weight:600;color:#7B61FF;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent">All</span>`;
-        chain.forEach((c, i) => {
-            h += `<span style="font-size:12px;color:#C7C7CC;flex-shrink:0"> › </span>`;
-            const isLast = i === chain.length - 1;
-            h += `<span onclick="selectCat('${c.id}')" style="font-size:12px;font-weight:600;color:${isLast?'#1C1C1E':'#7B61FF'};cursor:${isLast?'default':'pointer'};white-space:nowrap;-webkit-tap-highlight-color:transparent">${c.emoji||''} ${c.name}</span>`;
-        });
-        h += '</div>';
-        return h;
-    }
-
-    function renderExplorerList(parentId, showCat, overrideLinks){
-        // subfolders of current
-        const subCats = parentId === null ? [] : state.cats.filter(c => c.parent === parentId);
-        // links in current (or all if parentId null)
-        const links = overrideLinks !== undefined ? overrideLinks : (parentId === null ? state.links : state.links.filter(l => l.cat === parentId));
-
-        if(!subCats.length && !links.length){
-            return `<div class="links-empty">Empty. Tap + to add.</div>`;
-        }
-
-        let h = '<div class="link-list">';
-
-        // FOLDERS FIRST
-        subCats.forEach(c => {
-            const count = state.links.filter(l => getAllCatIds(c.id).includes(l.cat)).length;
-            h += `<div class="link-row" ontouchstart="swipeStart(event,this)" ontouchmove="swipeMove(event,this)" ontouchend="swipeEnd(event,this)">
-                <div class="link-row-del-bg" onclick="event.stopPropagation();deleteCatSwipe('${c.id}');navigateDetail(state.cur)">Delete</div>
+    function renderExplorerList(parentId,showCat,overrideLinks){
+        const subCats=parentId===null?[]:state.cats.filter(c=>c.parent===parentId);
+        const links=overrideLinks!==undefined?overrideLinks:(parentId===null?state.links:state.links.filter(l=>l.cat===parentId));
+        if(!subCats.length&&!links.length) return '<div class="links-empty">Empty. Tap + to add.</div>';
+        let h='<div class="link-list">';
+        subCats.forEach(c=>{
+            const count=state.links.filter(l=>getAllCatIds(c.id).includes(l.cat)).length;
+            h+=`<div class="link-row" ontouchstart="swipeStart(event,this)" ontouchmove="swipeMove(event,this)" ontouchend="swipeEnd(event,this)">
+                <div class="link-row-del-bg" onclick="event.stopPropagation();deleteCatSwipe('${c.id}');if(state.cur)navigateDetail(state.cur)">Delete</div>
                 <div class="link-row-inner" onclick="navigateDetail('${c.id}')" style="cursor:pointer">
-                    <div class="link-thumb" style="background:#EDE8FF;border-radius:10px;font-size:24px;display:flex;align-items:center;justify-content:center">
-                        ${c.emoji||'📁'}
-                    </div>
+                    <div class="link-thumb" style="background:#EDE8FF;border-radius:10px;font-size:24px;display:flex;align-items:center;justify-content:center">${c.emoji||'📁'}</div>
                     <div class="link-row-info">
                         <div class="link-row-url" style="color:#1C1C1E">${c.name}</div>
                         <div class="link-row-meta">${count} link${count!==1?'s':''}</div>
@@ -731,26 +747,21 @@
                 </div>
             </div>`;
         });
-
-        // LINKS AFTER
-        links.forEach(l => {
-            const t = getThumb(l.url);
-            const wa = "https://wa.me/?text=" + encodeURIComponent(l.url);
-            const cat = state.cats.find(c => c.id === l.cat);
-            h += `<div class="link-row" ontouchstart="swipeStart(event,this)" ontouchmove="swipeMove(event,this)" ontouchend="swipeEnd(event,this)">
-                <div class="link-row-del-bg" onclick="event.stopPropagation();removeLinkAndRefresh(${l.id})">Delete</div>
+        links.forEach(l=>{
+            const t=getThumb(l.url);
+            const cat=state.cats.find(c=>c.id===l.cat);
+            h+=`<div class="link-row" ontouchstart="swipeStart(event,this)" ontouchmove="swipeMove(event,this)" ontouchend="swipeEnd(event,this)">
+                <div class="link-row-del-bg" onclick="event.stopPropagation();removeLinkAndRefresh('${l.id}')">Delete</div>
                 <div class="link-row-inner">
-                    <div class="link-thumb" data-default="1" style="display:flex;align-items:center;justify-content:center;font-size:22px;background:#EDE8FF;border-radius:8px;" id="lt-${l.id}">
-                        <img src="${t}" loading="lazy"
-                            style="width:100%;height:100%;object-fit:cover;border-radius:8px;"
+                    <div class="link-thumb" style="display:flex;align-items:center;justify-content:center;font-size:22px;background:#EDE8FF;border-radius:8px;" id="lt-${l.id}">
+                        <img src="${t}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"
                             onload="this.parentElement.style.background='transparent'"
-                            onerror="this.style.display='none'">
-                        🔗
+                            onerror="this.style.display='none'">🔗
                     </div>
                     <div class="link-row-info">
                         <a class="link-row-url" href="${l.url}" target="_blank">${domain(l.url)}</a>
-                        ${l.note ? `<div class="link-row-note">${l.note}</div>` : ''}
-                        <div class="link-row-meta">${ago(l.date)}${showCat && cat ? ' · ' + cat.emoji + ' ' + cat.name : ''}</div>
+                        ${l.note?`<div class="link-row-note">${l.note}</div>`:''}
+                        <div class="link-row-meta">${ago(l.date)}${showCat&&cat?' · '+cat.emoji+' '+cat.name:''}</div>
                     </div>
                     <div class="link-row-actions">
                         <button class="lbtn lbtn-wa" onclick="event.stopPropagation();shareLink('${l.url}')">${WA_SVG}</button>
@@ -758,29 +769,18 @@
                 </div>
             </div>`;
         });
-
-        h += '</div>';
+        h+='</div>';
         return h;
     }
 
-
-    function shareLink(url){
-        if(navigator.share){
-            navigator.share({ url: url }).catch(()=>{});
-        } else {
-            navigator.clipboard && navigator.clipboard.writeText(url);
-        }
-    }
+    function shareLink(url){ if(navigator.share) navigator.share({url}).catch(()=>{}); else navigator.clipboard&&navigator.clipboard.writeText(url); }
 
     function selectCat(id){
-        state.cur = id;
-        if(id === null){
-            // Recent — open detail screen with recent links
-            const recentLinks = state.links.slice(0, 10);
-            document.getElementById('detail-nav-title').innerHTML = '<span style="font-size:22px;margin-right:6px;vertical-align:middle">🕐</span><span style="vertical-align:middle">Recent</span>';
-            document.getElementById('detail-content').innerHTML = recentLinks.length
-                ? renderExplorerList(null, true, recentLinks)
-                : '<div class="links-empty">No links yet.</div>';
+        state.cur=id;
+        if(id===null){
+            const recentLinks=state.links.slice(0,10);
+            document.getElementById('detail-nav-title').innerHTML='<span style="font-size:22px;margin-right:6px;vertical-align:middle">🕐</span><span style="vertical-align:middle">Recent</span>';
+            document.getElementById('detail-content').innerHTML=recentLinks.length?renderExplorerList(null,true,recentLinks):'<div class="links-empty">No links yet.</div>';
             document.getElementById('detail-screen').classList.add('open');
         } else {
             document.getElementById('detail-screen').classList.add('open');
@@ -788,164 +788,134 @@
         }
     }
 
-
     function navigateDetail(id){
-        state.cur = id;
-        const cat = state.cats.find(c => c.id === id);
+        state.cur=id;
+        const cat=state.cats.find(c=>c.id===id);
         if(cat){
-            const isDefault = DEFAULT_CATS.some(d => d.id === cat.id);
-            const emojiSize = isDefault ? '22px' : '16px';
-            document.getElementById('detail-nav-title').innerHTML =
-                '<span style="font-size:' + emojiSize + ';margin-right:6px;vertical-align:middle">' + (cat.emoji||'📁') + '</span>' +
-                '<span style="vertical-align:middle">' + cat.name + '</span>';
+            const isDefault=DEFAULT_CATS.some(d=>d.id===cat.id);
+            const emojiSize=isDefault?'22px':'16px';
+            document.getElementById('detail-nav-title').innerHTML=
+                '<span style="font-size:'+emojiSize+';margin-right:6px;vertical-align:middle">'+(cat.emoji||'📁')+'</span>'+
+                '<span style="vertical-align:middle">'+cat.name+'</span>';
         }
-        document.getElementById('detail-content').innerHTML = renderExplorerList(id, false);
-        document.getElementById('detail-content').scrollTop = 0;
+        document.getElementById('detail-content').innerHTML=renderExplorerList(id,false);
+        document.getElementById('detail-content').scrollTop=0;
     }
 
-    function closeDetail(){
-        document.getElementById('detail-screen').classList.remove('open');
-        state.cur = null;
-        render();
-    }
-
-    // --- MISMAS FUNCIONES LOGICAS ---
-
+    function closeDetail(){ document.getElementById('detail-screen').classList.remove('open'); state.cur=null; render(); }
+    function goHome(){ closeDetail(); }
     function openCat(id){ selectCat(id); }
 
-    function goHome(){
-        closeDetail();
-    }
-
+    // ── ADD LINK ──────────────────────────────────────────────────────────────────
     function openAdd(){
-        // Mismo generador de opciones
-        const opts = state.cats.map(c => `<option value="${c.id}" ${c.id===state.cur?'selected':''}>${c.emoji} ${c.name}</option>`).join("");
-        const sheet = document.getElementById("sheet");
-        sheet.style.display="block";
-        // Nuevo diseño CSS aplicado al Modal
-        sheet.innerHTML = `
-            <div class="sheet-bg" onclick="closeSheet()">
-                <div class="sheet" onclick="event.stopPropagation()">
-                    <div class="recent-title" style="margin-bottom:20px; text-align:center;">Add New Link</div>
-                    <input id="url" class="input" placeholder="Paste link here (https://...)">
-                    <input id="note" class="input" placeholder="Note or description (optional)">
-                    <select id="cat-sel" class="select">${opts}</select>
-                    <button class="save" onclick="addLink()">Save to Vault</button>
-                </div>
-            </div>`;
-        document.getElementById("url").focus();
+        const opts=state.cats.map(c=>`<option value="${c.id}" ${c.id===state.cur?'selected':''}>${c.emoji} ${c.name}</option>`).join('');
+        const sheet=document.getElementById('sheet');
+        sheet.style.display='block';
+        sheet.innerHTML=`<div class="sheet-bg" onclick="closeSheet()"><div class="sheet" onclick="event.stopPropagation()">
+            <div class="recent-title" style="margin-bottom:20px;text-align:center">Add New Link</div>
+            <input id="url" class="input" placeholder="Paste link here (https://...)">
+            <input id="note" class="input" placeholder="Note or description (optional)">
+            <select id="cat-sel" class="select">${opts}</select>
+            <button class="save" onclick="addLink()">Save to Vault</button>
+        </div></div>`;
+        document.getElementById('url').focus();
     }
 
-    function addLink(){
-        let url = document.getElementById("url").value.trim();
+    async function addLink(){
+        let url=document.getElementById('url').value.trim();
         if(!url) return;
-        if(!/^https?:\/\//i.test(url)) url = "https://" + url;
-        const catId = document.getElementById("cat-sel").value;
-        state.links.unshift({
-            id: Date.now(),
-            url: url,
-            note: document.getElementById("note").value.trim(),
-            cat: catId,
-            date: Date.now()
-        });
-        saveState();
+        if(!/^https?:\/\//i.test(url)) url='https://'+url;
+        const catId=document.getElementById('cat-sel').value;
+        const note=document.getElementById('note').value.trim();
+        const {data,error}=await sb.from('links').insert({
+            user_id:state.user.id, url, note, category_id:catId
+        }).select().single();
+        if(error){ alert('Error saving: '+error.message); return; }
+        state.links.unshift({id:data.id,url:data.url,note:data.note||'',cat:data.category_id,date:new Date(data.created_at).getTime()});
         closeSheet();
         render();
-        // Refresh detail screen if open
-        const screen = document.getElementById('detail-screen');
-        if(screen.classList.contains('open')){
-            navigateDetail(state.cur || catId);
-        }
+        const screen=document.getElementById('detail-screen');
+        if(screen.classList.contains('open')) navigateDetail(state.cur||catId);
     }
 
-    let pickedIcon = "📁"; // Icono por defecto
-    let pickedGradient = "card-purple"; // Color por defecto
-
+    // ── ADD CATEGORY ──────────────────────────────────────────────────────────────
+    let pickedIcon='📁', pickedGradient='card-purple';
     function openAddCategory(){
-        // Asignar color aleatorio de los 4 disponibles para la nueva carpeta
-        const grads = ["card-purple", "card-orange", "card-blue", "card-pink"];
-        pickedGradient = grads[Math.floor(Math.random() * grads.length)];
-
-        const sheet = document.getElementById("sheet");
-        sheet.style.display="block";
-        // Adaptado con el generador de iconos antiguo
-        sheet.innerHTML = `
-            <div class="sheet-bg" onclick="closeSheet()">
-                <div class="sheet" onclick="event.stopPropagation()">
-                    <div class="recent-title" style="margin-bottom:20px; text-align:center;">Create Folder</div>
-                    <input id="newcat-name" class="input" placeholder="Folder Name">
-                    <div class="icon-picker">${ICONS.map(i => `<div class="icon-item" onclick="pickIcon(this,'${i}')">${i}</div>`).join("")}</div>
-                    <button class="save" onclick="addCategory()">Create Folder</button>
-                </div>
-            </div>`;
-        document.getElementById("newcat-name").focus();
+        const grads=['card-purple','card-orange','card-blue','card-pink'];
+        pickedGradient=grads[Math.floor(Math.random()*grads.length)];
+        const sheet=document.getElementById('sheet');
+        sheet.style.display='block';
+        sheet.innerHTML=`<div class="sheet-bg" onclick="closeSheet()"><div class="sheet" onclick="event.stopPropagation()">
+            <div class="recent-title" style="margin-bottom:20px;text-align:center">Create Folder</div>
+            <input id="newcat-name" class="input" placeholder="Folder Name">
+            <div class="icon-picker">${ICONS.map(i=>`<div class="icon-item" onclick="pickIcon(this,'${i}')">${i}</div>`).join('')}</div>
+            <button class="save" onclick="addCategory()">Create Folder</button>
+        </div></div>`;
+        document.getElementById('newcat-name').focus();
     }
+    function pickIcon(el,icon){ document.querySelectorAll('.icon-item').forEach(i=>i.classList.remove('sel')); el.classList.add('sel'); pickedIcon=icon; }
 
-    function pickIcon(el, icon){
-        document.querySelectorAll(".icon-item").forEach(i => i.classList.remove("sel"));
-        el.classList.add("sel");
-        pickedIcon = icon; // Aunque en el diseño visual de carpeta usamos '📁' amarillo
-    }
-
-    function addCategory(){
-        const name = document.getElementById("newcat-name").value.trim();
+    async function addCategory(){
+        const name=document.getElementById('newcat-name').value.trim();
         if(!name) return;
-        const parentId = state.cur;
-        state.cats.push({
-            id: "c" + Date.now(),
-            name: name,
-            emoji: pickedIcon || "📁",
-            grad: pickedGradient,
-            parent: parentId
-        });
-        saveState();
+        const parentId=state.cur;
+        const {data,error}=await sb.from('categories').insert({
+            user_id:state.user.id, name, emoji:pickedIcon||'📁',
+            grad:pickedGradient, parent_id:parentId||null, position:state.cats.length
+        }).select().single();
+        if(error){ alert('Error: '+error.message); return; }
+        state.cats.push({id:data.id,name:data.name,emoji:data.emoji,grad:data.grad,parent:data.parent_id||null});
         closeSheet();
         render();
-        // If inside a category, refresh detail screen immediately
-        const screen = document.getElementById('detail-screen');
-        if(screen.classList.contains('open') && parentId){
-            navigateDetail(parentId);
+        const screen=document.getElementById('detail-screen');
+        if(screen.classList.contains('open')&&parentId) navigateDetail(parentId);
+    }
+
+    // ── DELETE ────────────────────────────────────────────────────────────────────
+    async function deleteCatSwipe(id){
+        await sb.from('links').delete().eq('category_id',id);
+        await sb.from('categories').delete().eq('id',id);
+        state.cats=state.cats.filter(c=>c.id!==id);
+        state.links=state.links.filter(l=>l.cat!==id);
+        render();
+    }
+
+    async function removeLinkAndRefresh(id){
+        await sb.from('links').delete().eq('id',id);
+        state.links=state.links.filter(l=>l.id!==id);
+        render();
+        const screen=document.getElementById('detail-screen');
+        if(screen.classList.contains('open')&&state.cur!==null) navigateDetail(state.cur);
+        else if(screen.classList.contains('open')){
+            const recentLinks=state.links.slice(0,10);
+            document.getElementById('detail-content').innerHTML=recentLinks.length?renderExplorerList(null,true,recentLinks):'<div class="links-empty">No links yet.</div>';
         }
     }
 
-    function deleteCategory(id, e){
-        e.stopPropagation(); // No abrir la categoría al borrar
-        if(!confirm("Delete this folder and ALL links inside?")) return;
-        state.cats = state.cats.filter(c => c.id !== id);
-        state.links = state.links.filter(l => l.cat !== id);
-        saveState();
-        render();
-    }
+    function closeSheet(){ document.getElementById('sheet').style.display='none'; }
 
-    function removeLink(id){
-        state.links = state.links.filter(l => l.id !== id);
-        saveState();
-        render();
-    }
-    function removeLinkAndRefresh(id){
-        state.links = state.links.filter(l => l.id !== id);
-        saveState();
-        render();
-        const screen = document.getElementById('detail-screen');
-        if(screen.classList.contains('open') && state.cur !== null){
-            navigateDetail(state.cur);
-        } else if(screen.classList.contains('open')){
-            const recentLinks = state.links.slice(0,10);
-            document.getElementById('detail-content').innerHTML = recentLinks.length
-                ? renderExplorerList(null, true, recentLinks)
-                : '<div class="links-empty">No links yet.</div>';
+    // ── INIT ──────────────────────────────────────────────────────────────────────
+    sb.auth.onAuthStateChange(async (event, session) => {
+        if(session?.user){
+            state.user = session.user;
+            hideAuth();
+            await loadData();
+        } else {
+            state.user = null;
+            state.links = [];
+            state.cats = [];
+            render();
+            showAuth();
         }
-    }
+    });
 
-    function closeSheet(){ document.getElementById("sheet").style.display="none"; }
-
-    // Mismo Inicio
     applySettings();
     render();
 </script>
+
 <script>
     if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('/linkora/sw.js');
+        navigator.serviceWorker.register('/linkora/sw.js');
     }
 </script>
 </body>
