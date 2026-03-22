@@ -285,20 +285,25 @@
         .order-emoji { font-size:22px; }
         .order-name { font-size:15px;font-weight:600;color:#1C1C1E;flex:1; }
 
-        /* LARGE ICONS MODE */
-        body.large-icons .cat-pill-box { width:66px;height:66px;font-size:30px;border-radius:18px; }
-        body.large-icons .cat-pill-label { font-size:12px;max-width:70px; }
-        body.large-icons .cat-pills { gap:10px; }
-        body.large-icons .cat-list-item { padding:15px 16px; }
-        body.large-icons .cat-list-icon { font-size:30px;width:40px; }
-        body.large-icons .cat-list-name { font-size:17px; }
-        body.large-icons .cat-list-count { font-size:14px; }
-        body.large-icons .link-row-inner { padding:13px 0; }
-        body.large-icons .link-thumb { width:68px;height:50px; }
-        body.large-icons .link-row-url { font-size:15px; }
-        body.large-icons .link-row-note { font-size:13px; }
-        body.large-icons .link-row-meta { font-size:12px; }
-        body.large-icons .link-thumb[data-default] { font-size:28px; }
+        /* DEFAULT = LARGE */
+        .cat-list-item { padding:15px 16px; }
+        .cat-list-icon { font-size:30px;width:40px; }
+        .cat-list-name { font-size:17px; }
+        .cat-list-count { font-size:14px; }
+
+        /* SMALL ICONS MODE (toggle en settings) */
+        body.small-icons .cat-pill-box { width:52px;height:52px;font-size:24px;border-radius:14px; }
+        body.small-icons .cat-pill-label { font-size:10px;max-width:56px; }
+        body.small-icons .cat-pills { gap:8px; }
+        body.small-icons .cat-list-item { padding:11px 14px; }
+        body.small-icons .cat-list-icon { font-size:22px;width:32px; }
+        body.small-icons .cat-list-name { font-size:14px; }
+        body.small-icons .cat-list-count { font-size:12px; }
+        body.small-icons .link-row-inner { padding:10px 0; }
+        body.small-icons .link-thumb { width:56px;height:40px; }
+        body.small-icons .link-row-url { font-size:13px; }
+        body.small-icons .link-row-note { font-size:11px; }
+        body.small-icons .link-row-meta { font-size:10px; }
 
 
         /* CATEGORY SIDEBAR LIST */
@@ -466,20 +471,20 @@
 
     function saveSettings(){ localStorage.setItem(SK_SETTINGS, JSON.stringify(settings)); }
 
-    function applySettings(){
-        if(settings.largeIcons){
-            document.body.classList.add('large-icons');
-            document.getElementById('toggle-large').classList.add('on');
-        } else {
-            document.body.classList.remove('large-icons');
-            document.getElementById('toggle-large').classList.remove('on');
-        }
-    }
-
     function toggleLargeIcons(){
         settings.largeIcons = !settings.largeIcons;
         saveSettings();
         applySettings();
+    }
+
+    function applySettings(){
+        if(settings.largeIcons){
+            document.body.classList.remove('small-icons');
+            document.getElementById('toggle-large').classList.add('on');
+        } else {
+            document.body.classList.add('small-icons');
+            document.getElementById('toggle-large').classList.remove('on');
+        }
     }
 
     function openSettings(){
