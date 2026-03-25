@@ -1,4 +1,4 @@
-{
+7{
   "name": "Linkora Hub",
   "short_name": "Linkora Hub",
   "description": "Save instantly your links",
@@ -27,5 +27,14 @@
       "type": "image/png",
       "purpose": "any"
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/linkora/",
+    "method": "GET",
+    "params": {
+      "url": "url",
+      "text": "text",
+      "title": "title"
+    }
+  }
 }
