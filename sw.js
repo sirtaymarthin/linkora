@@ -1,24 +1,23 @@
-const CACHE = 'lv-v100';
-const FILES = ['/linkora/', '/linkora/index.html'];
+const CACHE = 'linkora-v3';
 
 self.addEventListener('install', e => {
-  self.skipWaiting();
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(FILES))
-  );
+    self.skipWaiting();
+    e.waitUntil(
+        caches.open(CACHE).then(c => c.addAll(['/linkora/', '/linkora/index.html']))
+    );
 });
 
 self.addEventListener('activate', e => {
-  self.clients.claim();
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
-  );
+    self.clients.claim();
+    e.waitUntil(
+        caches.keys().then(keys =>
+            Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+        )
+    );
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+    e.respondWith(
+        fetch(e.request).catch(() => caches.match(e.request))
+    );
 });
