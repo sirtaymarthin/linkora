@@ -508,7 +508,7 @@
 
     // ── STATE ─────────────────────────────────────────────────────────────────────
     let state = { links:[], cats:[], cur:null, user:null };
-
+    let appReady = false;
     // ── AUTH ──────────────────────────────────────────────────────────────────────
     function showAuth(tab='login'){
         document.getElementById('auth-screen').classList.add('open');
@@ -596,6 +596,7 @@
             }
         }
         render();
+        appReady = true;
     }
 
     async function saveState(){
@@ -989,20 +990,22 @@
 
     // ── SHARE TARGET ─────────────────────────────────────────────────────────────
     function checkShareTarget(){
-        const params = new URLSearchParams(window.location.search);
-        const sharedUrl = params.get('url') || params.get('text') || '';
-        if(!sharedUrl) return;
-        // Clean URL from address bar
-        window.history.replaceState({}, '', '/linkora/');
-        // Wait for auth + data to load, then open add sheet
-        const tryOpen = () => {
-            if(!state.user || state.cats.length === 0){
-                setTimeout(tryOpen, 300);
-                return;
-            }
-            openAddWithUrl(sharedUrl);
-        };
-        setTimeout(tryOpen, 500);
+    const params = new URLSearchParams(window.location.search);
+    const sharedUrl = params.get('url') || params.get('text') || '';
+    if(!sharedUrl) return;
+
+    window.history.replaceState({}, '', '/linkora/');
+
+    const wait = () => {
+        if (!appReady) {
+            setTimeout(wait, 300);
+            return;
+        }
+
+        openAddWithUrl(sharedUrl);
+    };
+
+    wait();
     }
 
     function openAddWithUrl(url){
