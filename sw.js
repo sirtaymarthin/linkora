@@ -18,18 +18,23 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
 
-    // 👉 SOLO interceptar peticiones POST del share_target
-    if (e.request.method === 'POST') {
+    const url = new URL(e.request.url);
+
+    // 👉 SOLO interceptar el share_target
+    if (
+        e.request.method === 'POST' &&
+        url.pathname === '/linkora/'
+    ) {
         e.respondWith((async () => {
             const formData = await e.request.formData();
-            const url = formData.get('url') || formData.get('text') || '';
+            const sharedUrl = formData.get('url') || formData.get('text') || '';
 
-            return Response.redirect(`/linkora/?url=${encodeURIComponent(url)}`, 303);
+            return Response.redirect(`/linkora/?url=${encodeURIComponent(sharedUrl)}`, 303);
         })());
         return;
     }
 
-    // 👉 resto normal
+    // 👉 TODO lo demás pasa normal
     e.respondWith(
         fetch(e.request).catch(() => caches.match(e.request))
     );
