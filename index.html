@@ -485,6 +485,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+    let appReady = false;
     // ── SUPABASE ──────────────────────────────────────────────────────────────────
     const SB_URL = 'https://nskdklncdajsfpwngqqx.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5za2RrbG5jZGFqc2Zwd25ncXF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyMDM2MDksImV4cCI6MjA4OTc3OTYwOX0.D9VcFUED_2tGna2_FTjFvTAfeOq2h8411Vbg2F3yRl8';
@@ -870,6 +871,10 @@
     }
 
     async function addLink(){
+        if(!appReady){
+    alert('Cargando datos, espera un momento...');
+    return;
+        }
         let url=document.getElementById('url').value.trim();
         if(!url) return;
         if(!/^https?:\/\//i.test(url)) url='https://'+url;
@@ -1031,6 +1036,7 @@
     let lastUserId = null;
 
     sb.auth.onAuthStateChange(async (event, session) => {
+        appReady = false; // 👈 reset SIEMPRE
         if(session?.user){
             const uid = session.user.id;
             // Avoid duplicate loads for same user
@@ -1044,6 +1050,7 @@
             state.cur = null;
             hideAuth();
             await loadData();
+            appReady = true;
             loadingData = false;
         } else {
             loadingData = false;
@@ -1057,6 +1064,14 @@
         }
     });
 
+    document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        if (!appReady && state.user) {
+            loadData(); // recarga datos al volver
+        }
+    }
+});
+    
     applySettings();
     render();
     checkShareTarget();
