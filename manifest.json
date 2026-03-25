@@ -29,12 +29,13 @@
     }
   ],
   "share_target": {
-    "action": "/linkora/",
-    "method": "GET",
-    "params": {
-      "url": "url",
-      "text": "text",
-      "title": "title"
-    }
+  "action": "/linkora/",
+  "method": "POST",
+  "enctype": "application/x-www-form-urlencoded",
+  "params": {
+    "url": "url",
+    "text": "text",
+    "title": "title"
+  }
   }
 }
