@@ -1,4 +1,4 @@
-const CACHE = 'linkora-v5';
+const CACHE = 'linkora-v6';
 
 self.addEventListener('install', e => {
     self.skipWaiting();
