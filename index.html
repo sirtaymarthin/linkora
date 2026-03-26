@@ -995,7 +995,21 @@
             const uid = session.user.id;
             // Avoid duplicate loads for same user
             if(loadingData) return;
-            if(uid === lastUserId && state.cats.length > 0){ hideAuth(); return; }
+            if(uid === lastUserId && state.cats.length > 0){
+                hideAuth();
+                if (pendingShareUrl) {
+                    const url = pendingShareUrl, note = pendingShareNote;
+                    pendingShareUrl = pendingShareNote = null;
+                    openAdd();
+                    setTimeout(() => {
+                        const el = document.getElementById('url');
+                        const nl = document.getElementById('note');
+                        if (el) el.value = url;
+                        if (nl) nl.value = note;
+                    }, 100);
+                }
+                return;
+            }
             loadingData = true;
             lastUserId = uid;
             state.user = session.user;
