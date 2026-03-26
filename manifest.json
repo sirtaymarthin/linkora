@@ -11,6 +11,7 @@
   "share_target": {
     "action": "/linkora/",
     "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
     "params": {
       "url": "share_url",
       "text": "share_text",
