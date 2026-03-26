@@ -485,6 +485,20 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+    (function() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('share_url') || params.get('share_text') || params.get('share_title')) {
+            const shareUrl   = params.get('share_url')  || '';
+            const shareText  = params.get('share_text') || '';
+            const shareTitle = params.get('share_title')|| '';
+            const urlFromText = shareText.match(/https?:\/\/[^\s]+/)?.[0] || '';
+            sessionStorage.setItem('pendingShare', JSON.stringify({
+                url: shareUrl || urlFromText || '',
+                note: shareTitle || ''
+            }));
+            window.history.replaceState({}, '', '/linkora/');
+        }
+    })();
     // ── SUPABASE ──────────────────────────────────────────────────────────────────
     const SB_URL = 'https://nskdklncdajsfpwngqqx.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5za2RrbG5jZGFqc2Zwd25ncXF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyMDM2MDksImV4cCI6MjA4OTc3OTYwOX0.D9VcFUED_2tGna2_FTjFvTAfeOq2h8411Vbg2F3yRl8';
@@ -1048,22 +1062,14 @@
     // ── WEB SHARE TARGET ──────────────────────────────────────────────────────────
     let pendingShareUrl = null;
     let pendingShareNote = null;
-
-    (function handleShareTarget() {
-        const params = new URLSearchParams(window.location.search);
-        const sharedUrl   = params.get('share_url')  || '';
-        const sharedText  = params.get('share_text') || '';
-        const sharedTitle = params.get('share_title')|| '';
-        const urlFromText = sharedText.match(/https?:\/\/[^\s]+/)?.[0] || '';
-        const finalUrl    = sharedUrl || urlFromText || '';
-
-        if (finalUrl) {
-            window.history.replaceState({}, '', '/linkora/');
-            pendingShareUrl  = finalUrl;
-            pendingShareNote = sharedTitle || '';
-        }
-    })();
-
+    
+    const _pending = sessionStorage.getItem('pendingShare');
+    if (_pending) {
+        sessionStorage.removeItem('pendingShare');
+        const _p = JSON.parse(_pending);
+        pendingShareUrl  = _p.url  || null;
+        pendingShareNote = _p.note || null;
+    }
 
     applySettings();
     render();
