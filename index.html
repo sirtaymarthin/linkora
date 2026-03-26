@@ -487,14 +487,14 @@
 <script>
     (function() {
         const params = new URLSearchParams(window.location.search);
-        if (params.get('share_url') || params.get('share_text') || params.get('share_title')) {
-            const shareUrl   = params.get('share_url')  || '';
-            const shareText  = params.get('share_text') || '';
-            const shareTitle = params.get('share_title')|| '';
-            const urlFromText = shareText.match(/https?:\/\/[^\s]+/)?.[0] || '';
+        const shareUrl = params.get('share_url');
+        const shareText = params.get('share_text');
+        if (shareUrl || shareText) {  // solo si son params de share, no OAuth
+            const shareTitle = params.get('share_title') || '';
+            const urlFromText = (shareText||'').match(/https?:\/\/[^\s]+/)?.[0] || '';
             sessionStorage.setItem('pendingShare', JSON.stringify({
                 url: shareUrl || urlFromText || '',
-                note: shareTitle || ''
+                note: shareTitle
             }));
             window.history.replaceState({}, '', '/linkora/');
         }
@@ -1062,7 +1062,7 @@
     // ── WEB SHARE TARGET ──────────────────────────────────────────────────────────
     let pendingShareUrl = null;
     let pendingShareNote = null;
-    
+
     const _pending = sessionStorage.getItem('pendingShare');
     if (_pending) {
         sessionStorage.removeItem('pendingShare');
