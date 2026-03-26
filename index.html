@@ -1024,18 +1024,15 @@
         const sharedText = params.get('share_text') || '';
         const sharedTitle= params.get('share_title')|| '';
 
-        // Extraer URL del texto si viene en share_text (ej. YouTube comparte así)
         const urlFromText = sharedText.match(/https?:\/\/[^\s]+/)?.[0] || '';
         const finalUrl = sharedUrl || urlFromText || '';
 
         if (finalUrl) {
             window.history.replaceState({}, '', '/linkora/');
 
-            // Esperar a que el usuario esté autenticado y los datos cargados
             const tryOpen = () => {
                 if (state.user && state.cats.length > 0) {
                     openAdd();
-                    // Rellenar los campos tras abrir el sheet
                     setTimeout(() => {
                         const urlInput  = document.getElementById('url');
                         const noteInput = document.getElementById('note');
