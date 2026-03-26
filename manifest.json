@@ -8,6 +8,15 @@
   "background_color": "#F7F9FC",
   "theme_color": "#F7F9FC",
   "orientation": "portrait-primary",
+  "share_target": {
+    "action": "/linkora/",
+    "method": "GET",
+    "params": {
+      "url": "share_url",
+      "text": "share_text",
+      "title": "share_title"
+    }
+  },
   "icons": [
     {
       "src": "icon-192.png",
