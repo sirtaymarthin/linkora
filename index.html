@@ -1029,7 +1029,6 @@
         const finalUrl = sharedUrl || urlFromText || '';
 
         if (finalUrl) {
-            // Limpiar la URL para no re-abrirlo al recargar
             window.history.replaceState({}, '', '/linkora/');
 
             // Esperar a que el usuario esté autenticado y los datos cargados
