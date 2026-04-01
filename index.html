@@ -488,15 +488,18 @@
         const params = new URLSearchParams(window.location.search);
         const shareUrl = params.get('share_url');
         const shareText = params.get('share_text');
-        if (shareUrl || shareText) {  // solo si son params de share, no OAuth
+
+        if (shareUrl || shareText) {
             const shareTitle = params.get('share_title') || '';
             const urlFromText = (shareText||'').match(/https?:\/\/[^\s]+/)?.[0] || '';
             sessionStorage.setItem('pendingShare', JSON.stringify({
                 url: shareUrl || urlFromText || '',
                 note: shareTitle
             }));
-            window.history.replaceState({}, '', '/linkora/');
         }
+
+        // 🔥 SIEMPRE limpiar la URL
+        window.history.replaceState({}, '', '/linkora/');
     })();
     // ── SUPABASE ──────────────────────────────────────────────────────────────────
     const SB_URL = 'https://nskdklncdajsfpwngqqx.supabase.co';
@@ -1019,7 +1022,15 @@
     let loadingData = false;
     let lastUserId = null;
 
+    let isNavigatingBack = false;
+
+    window.addEventListener('popstate', () => {
+        isNavigatingBack = true;
+        setTimeout(() => isNavigatingBack = false, 100);
+    });
+
     sb.auth.onAuthStateChange(async (event, session) => {
+        if (isNavigatingBack) return; // 👈 añadir esto
         if(session?.user){
             const uid = session.user.id;
             // Avoid duplicate loads for same user
@@ -1063,6 +1074,10 @@
             }
             loadingData = false;
         } else {
+            const { data } = await sb.auth.getSession();
+
+            if (data?.session?.user) return;
+
             loadingData = false;
             lastUserId = null;
             state.user = null;
@@ -1099,7 +1114,7 @@
             return;
         }
         // First press — block navigation and show toast
-        history.pushState({appHome: true}, '');
+        history.replaceState({appHome: true}, '');
         _backPressedOnce = true;
         const toast = document.getElementById('exit-toast');
         toast.classList.add('show');
@@ -1108,6 +1123,29 @@
             toast.classList.remove('show');
             _backPressedOnce = false;
         }, 2000);
+    });
+
+    // ── BACK HANDLER ─────────────────────────────────────────
+    history.pushState({app: true}, '');
+
+    window.addEventListener('popstate', () => {
+        const detailOpen = document.getElementById('detail-screen').classList.contains('open');
+        const settingsOpen = document.getElementById('settings-panel').classList.contains('open');
+
+        if (settingsOpen) {
+            closeSettings();
+            history.pushState({app: true}, '');
+            return;
+        }
+
+        if (detailOpen) {
+            closeDetail();
+            history.pushState({app: true}, '');
+            return;
+        }
+
+        showExitToast();
+        history.pushState({app: true}, '');
     });
 </script>
 
