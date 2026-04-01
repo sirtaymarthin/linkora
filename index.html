@@ -348,10 +348,6 @@
         .auth-google { width:100%; padding:14px; border:1.5px solid #EAEAEA; border-radius:14px; background:#fff; font-size:15px; font-weight:600; color:#1C1C1E; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; }
         .auth-google:active { background:#F2F2F7; }
 
-        /* BACK-TO-EXIT TOAST */
-        .exit-toast { position:fixed; bottom:110px; left:50%; transform:translateX(-50%) translateY(20px); background:rgba(28,28,30,0.85); color:#fff; padding:12px 20px; border-radius:12px; font-size:14px; font-weight:600; white-space:nowrap; z-index:9999; opacity:0; transition:opacity 0.25s, transform 0.25s; pointer-events:none; }
-        .exit-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
     </style>
 </head>
 <body>
@@ -441,7 +437,6 @@
 </div>
 
 <div id="sheet" style="display:none"></div>
-<div id="exit-toast" class="exit-toast">Press back again to exit</div>
 
 
 <div class="auth-screen" id="auth-screen">
@@ -488,7 +483,6 @@
         const params = new URLSearchParams(window.location.search);
         const shareUrl = params.get('share_url');
         const shareText = params.get('share_text');
-
         if (shareUrl || shareText) {
             const shareTitle = params.get('share_title') || '';
             const urlFromText = (shareText||'').match(/https?:\/\/[^\s]+/)?.[0] || '';
@@ -496,10 +490,8 @@
                 url: shareUrl || urlFromText || '',
                 note: shareTitle
             }));
+            window.history.replaceState({}, '', '/linkora/');
         }
-
-        // 🔥 SIEMPRE limpiar la URL
-        window.history.replaceState({}, '', '/linkora/');
     })();
     // ── SUPABASE ──────────────────────────────────────────────────────────────────
     const SB_URL = 'https://nskdklncdajsfpwngqqx.supabase.co';
@@ -532,7 +524,6 @@
     }
     function hideAuth(){
         document.getElementById('auth-screen').classList.remove('open');
-        history.pushState({appHome: true}, '');
     }
     function switchAuthTab(tab){
         document.getElementById('auth-login').style.display = tab==='login'?'block':'none';
@@ -1066,10 +1057,6 @@
             }
             loadingData = false;
         } else {
-            const { data } = await sb.auth.getSession();
-
-            if (data?.session?.user) return;
-
             loadingData = false;
             lastUserId = null;
             state.user = null;
@@ -1095,50 +1082,6 @@
 
     applySettings();
     render();
-
-    // ── BACK GESTURE: minimize instead of going to Google login ──────────────────
-    let _backPressedOnce = false;
-    let _exitToastTimer = null;
-    window.addEventListener('popstate', function() {
-        if (!state.user) return;
-        if (_backPressedOnce) {
-            // Second press within 2s — let navigation happen (Android will minimize PWA)
-            return;
-        }
-        // First press — block navigation and show toast
-        history.replaceState({appHome: true}, '');
-        _backPressedOnce = true;
-        const toast = document.getElementById('exit-toast');
-        toast.classList.add('show');
-        clearTimeout(_exitToastTimer);
-        _exitToastTimer = setTimeout(function() {
-            toast.classList.remove('show');
-            _backPressedOnce = false;
-        }, 2000);
-    });
-
-    // ── BACK HANDLER ─────────────────────────────────────────
-    history.pushState({app: true}, '');
-
-    window.addEventListener('popstate', () => {
-        const detailOpen = document.getElementById('detail-screen').classList.contains('open');
-        const settingsOpen = document.getElementById('settings-panel').classList.contains('open');
-
-        if (settingsOpen) {
-            closeSettings();
-            history.pushState({app: true}, '');
-            return;
-        }
-
-        if (detailOpen) {
-            closeDetail();
-            history.pushState({app: true}, '');
-            return;
-        }
-
-        showExitToast();
-        history.pushState({app: true}, '');
-    });
 </script>
 
 <script>
