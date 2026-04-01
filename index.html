@@ -1009,48 +1009,12 @@
 
     function closeSheet(){ document.getElementById('sheet').style.display='none'; }
 
-
-    // ── SHARE TARGET ─────────────────────────────────────────────────────────────
-    function checkShareTarget(){
-        const params = new URLSearchParams(window.location.search);
-        const sharedUrl = params.get('url') || params.get('text') || '';
-        if(!sharedUrl) return;
-        window.history.replaceState({}, '', '/linkora/');
-        const tryOpen = () => {
-            if(!state.user || state.cats.length === 0){ setTimeout(tryOpen, 300); return; }
-            openAddWithUrl(sharedUrl);
-        };
-        setTimeout(tryOpen, 500);
-    }
-
-    function openAddWithUrl(url){
-        const sheet = document.getElementById('sheet');
-        sheet.style.display = 'block';
-        const inCat = state.cur !== null;
-        const catName = inCat ? (state.cats.find(c=>c.id===state.cur)||{name:'',emoji:''}) : null;
-        const opts = inCat ? '' : state.cats.filter(c=>!c.parent).map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
-        const catField = inCat
-            ? `<div style="padding:14px 16px;background:#EDE8FF;border-radius:14px;margin-bottom:12px;font-size:15px;font-weight:600;color:#7B61FF">${catName.emoji} ${catName.name}</div>`
-            : `<select id="cat-sel" class="select">${opts}</select>`;
-        sheet.innerHTML=`<div class="sheet-bg" onclick="closeSheet()"><div class="sheet" onclick="event.stopPropagation()">
-            <div class="recent-title" style="margin-bottom:20px;text-align:center">💾 Save Link</div>
-            <input id="url" class="input" type="url" value="${url.replace(/"/g,'&quot;')}">
-            <input id="note" class="input" placeholder="Note (optional)">
-            ${catField}
-            <button class="save" onclick="addLink()">Save to Linkora</button>
-        </div></div>`;
-    }
-
     // ── INIT ──────────────────────────────────────────────────────────────────────
     let loadingData = false;
     let lastUserId = null;
 
     sb.auth.onAuthStateChange(async (event, session) => {
         if(session?.user){
-            // Supabase has already read the token at this point - safe to clean URL
-            if(window.location.hash || window.location.search){
-                window.history.replaceState({}, document.title, '/linkora/');
-            }
             const uid = session.user.id;
             // Avoid duplicate loads for same user
             if(loadingData) return;
@@ -1118,20 +1082,6 @@
 
     applySettings();
     render();
-    // ── BACK BUTTON ──────────────────────────────────────────────────────────────
-    function pushNavState(){ history.pushState({ linkora: true }, ''); }
-
-    window.addEventListener('popstate', function(){
-        const sheet = document.getElementById('sheet');
-        const detail = document.getElementById('detail-screen');
-        const settings = document.getElementById('settings-panel');
-        if(sheet.style.display !== 'none'){ closeSheet(); pushNavState(); }
-        else if(detail.classList.contains('open')){ closeDetail(); pushNavState(); }
-        else if(settings.classList.contains('open')){ closeSettings(); pushNavState(); }
-        else { history.pushState({ linkora: true }, ''); }
-    });
-    pushNavState();
-
 </script>
 
 <script>
