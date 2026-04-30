@@ -31,14 +31,14 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             min-height: 100vh;
-            padding-bottom: 100px; /* Espacio para la barra inferior */
+            padding-bottom: 100px;
         }
 
         .view{display:none;flex-direction:column;width: 100%;}
         .view.active{display:flex}
         .safe{height:env(safe-area-inset-top, 20px)}
 
-        /* --- HEADER ESTILO CLOUD --- */
+        /* --- HEADER --- */
         .cloud-header {
             padding: 30px 24px 20px;
             display: flex;
@@ -50,14 +50,13 @@
 
         .avatar-crown {
             width: 56px; height: 56px;
-            background-color: #E2E2E2; /* Gris de fondo */
+            background-color: #E2E2E2;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 28px;
             margin-bottom: 15px;
             position: relative;
         }
-        /* El círculo gris oscuro alrededor de la corona en tu imagen */
         .avatar-crown::after {
             content: ''; position: absolute; inset: -3px;
             border-radius: 50%; border: 3px solid #636366; opacity: 0.1;
@@ -92,7 +91,7 @@
         .search-box input::placeholder { color: #C7C7CC; }
         .search-icon { color: var(--purple); font-size: 20px; cursor: pointer; }
 
-        /* --- GRID DE CATEGORIAS (NUEVO ESTILO) --- */
+        /* --- GRID DE CATEGORIAS --- */
         .cat-scroll {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -104,7 +103,7 @@
             border-radius: 24px;
             padding: 24px;
             color: var(--white);
-            height: 200px; /* Más altas como en la imagen */
+            height: 200px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -116,7 +115,7 @@
         .cat-card:active { transform: scale(0.97); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
         .cat-card-top { display: flex; justify-content: space-between; align-items: center; }
-        .folder-icon { font-size: 36px; color: #FFE082; } /* Amarillo carpeta */
+        .folder-icon { font-size: 36px; color: #FFE082; }
         .dots-menu { font-size: 20px; color: rgba(255,255,255,0.7); cursor: pointer; padding: 5px; }
 
         .cat-card-bottom { display: flex; flex-direction: column; gap: 4px; }
@@ -124,14 +123,12 @@
         .cat-count { font-size: 14px; color: rgba(255,255,255,0.8); font-weight: 500; }
         .cat-date { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 8px; }
 
-        /* Colores específicos de la imagen */
         .card-purple { background: var(--purple); }
         .card-orange { background: var(--orange); }
         .card-blue { background: var(--blue); }
         .card-pink { background: var(--pink); }
 
-        /* Badge antiguo, adaptado */
-        .badge { display: none; } /* Oculto en este diseño, el número va abajo */
+        .badge { display: none; }
 
         /* --- SECCION RECIENTES --- */
         .recent-section { padding: 0 24px 30px; }
@@ -155,7 +152,7 @@
         .recent-name { font-size: 15px; font-weight: 600; color: var(--text-main); }
         .recent-meta { font-size: 12px; color: var(--text-sub); }
 
-        /* --- VISTA DE DETALLES (ENLACES) --- */
+        /* --- VISTA DE DETALLES --- */
         .detail-scroll { padding: 20px 24px 120px; display: grid; gap: 16px; }
         .link {
             background: var(--white); border-radius: 16px; overflow: hidden;
@@ -172,13 +169,13 @@
         .wa { background: #E8F9EE; color: #25D366; } .wa:active { background: #D0F2DC; }
         .del { background: #FFEBEB; color: #FF3B30; } .del:active { background: #FFD6D6; }
 
-        /* --- NAVEGACION INFERIOR (REEMPLAZA FABS) --- */
+        /* --- NAVEGACION INFERIOR --- */
         .nav-bar {
             position: fixed;
             bottom: 0; left: 0; width: 100%; height: 85px;
             background: var(--white);
             display: flex; justify-content: space-around; align-items: center;
-            padding: 0 10px 15px; /* Padding bottom para safe area */
+            padding: 0 10px 15px;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
             border-top: 1px solid #EAEAEA;
             z-index: 50;
@@ -191,7 +188,6 @@
         .nav-icon { font-size: 22px; }
         .nav-label { font-size: 11px; font-weight: 600; }
 
-        /* Botón central "+" rosa */
         .nav-add-btn {
             width: 60px; height: 60px;
             background: var(--pink);
@@ -200,13 +196,13 @@
             color: var(--white);
             font-size: 30px;
             box-shadow: 0 5px 15px rgba(255, 94, 120, 0.4);
-            margin-top: -35px; /* Flota hacia arriba */
+            margin-top: -35px;
             cursor: pointer;
             transition: transform 0.2s;
         }
         .nav-add-btn:active { transform: scale(0.9) translateY(-35px); }
 
-        /* --- UI ELEMENTS (BOTON VOLVER, MODALES) --- */
+        /* --- UI ELEMENTS --- */
         .back-nav { padding: 10px 24px; font-weight: 600; color: var(--purple); cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 15px; }
 
         .sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; z-index: 100; animation: fadeIn 0.3s; }
@@ -224,7 +220,6 @@
 
         .empty { padding: 80px 24px; text-align: center; color: var(--text-sub); font-size: 15px; line-height: 1.5; }
 
-        /* Animaciones */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
@@ -258,7 +253,6 @@
         .links-empty { padding: 40px 16px; text-align: center; color: #C7C7CC; font-size: 14px; font-weight: 600; }
         .links-section-title { font-size: 13px; font-weight: 700; color: #8E8E93; padding: 8px 16px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-
         /* SETTINGS */
         .settings-panel { display:none; position:fixed; inset:0; background:#F7F9FC; z-index:200; flex-direction:column; overflow-y:auto; }
         .settings-panel.open { display:flex; }
@@ -285,7 +279,7 @@
         .order-emoji { font-size:22px; }
         .order-name { font-size:15px;font-weight:600;color:#1C1C1E;flex:1; }
 
-        /* CATEGORY SIDEBAR LIST - DEFAULT LARGE */
+        /* CATEGORY SIDEBAR LIST */
         .cat-sidebar { display:flex;flex-direction:column;gap:2px;padding:0 12px 12px; }
         .cat-list-item { display:flex;align-items:center;gap:12px;padding:15px 16px;border-radius:12px;cursor:pointer;position:relative;overflow:hidden;transition:background 0.15s;-webkit-tap-highlight-color:transparent;touch-action:pan-y; }
         .cat-list-item.active { background:#EDE8FF; }
@@ -314,8 +308,6 @@
         body.small-icons .link-row-note { font-size:11px; }
         body.small-icons .link-row-meta { font-size:10px; }
 
-
-
         /* LINK ROW SWIPE DELETE */
         .link-row { position:relative; overflow:hidden; }
         .link-row-inner { display:flex;align-items:center;gap:12px;padding:10px 0;width:100%;transition:transform 0.25s ease; }
@@ -330,23 +322,6 @@
         .detail-back { width:36px;height:36px;border-radius:10px;background:#F2F2F7;border:none;font-size:22px;font-weight:700;color:#7B61FF;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
         .detail-nav-title { font-size:17px;font-weight:700;color:#1C1C1E;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
         .detail-content { flex:1; padding-bottom:100px; }
-
-
-        /* AUTH SCREEN */
-        .auth-screen { display:none; position:fixed; inset:0; background:#F7F9FC; z-index:300; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
-        .auth-screen.open { display:flex; }
-        .auth-logo { font-size:48px; margin-bottom:8px; }
-        .auth-title { font-size:28px; font-weight:800; color:#1C1C1E; margin-bottom:4px; }
-        .auth-sub { font-size:14px; color:#8E8E93; margin-bottom:32px; }
-        .auth-box { width:100%; max-width:360px; }
-        .auth-tabs { display:flex; background:#F2F2F7; border-radius:12px; padding:4px; margin-bottom:20px; }
-        .auth-tab { flex:1; padding:10px; border:none; border-radius:9px; background:transparent; font-size:14px; font-weight:600; color:#8E8E93; cursor:pointer; }
-        .auth-tab.on { background:#fff; color:#7B61FF; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
-        .auth-err { font-size:13px; color:#FF3B30; margin-top:-6px; margin-bottom:10px; min-height:18px; }
-        .auth-divider { display:flex; align-items:center; gap:10px; margin:16px 0; color:#C7C7CC; font-size:13px; }
-        .auth-divider::before,.auth-divider::after { content:''; flex:1; height:1px; background:#EAEAEA; }
-        .auth-google { width:100%; padding:14px; border:1.5px solid #EAEAEA; border-radius:14px; background:#fff; font-size:15px; font-weight:600; color:#1C1C1E; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; }
-        .auth-google:active { background:#F2F2F7; }
 
     </style>
 </head>
@@ -368,7 +343,6 @@
     </div>
 
     <div class="cat-sidebar" id="cat-pills"></div>
-
 
 </div>
 
@@ -397,11 +371,10 @@
         <div style="position:absolute;top:2px;right:18px;width:16px;height:16px;border-radius:50%;background:#7B61FF;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1">+</div>
     </div>
 
-    <div class="nav-item">
-        <div class="nav-icon">👤</div>
+    <div class="nav-item" onclick="openSettings()">
+        <div class="nav-icon">⚙️</div>
     </div>
 </nav>
-
 
 
 <div class="settings-panel" id="settings-panel">
@@ -421,16 +394,6 @@
         </div>
     </div>
     <div class="settings-section" style="margin-top:8px">
-        <div class="settings-section-title">Account</div>
-        <div class="settings-row">
-            <div class="settings-row-info">
-                <div class="settings-row-label" id="settings-user-email">Not signed in</div>
-                <div class="settings-row-sub">Signed in account</div>
-            </div>
-            <button onclick="doLogout()" style="padding:8px 16px;border-radius:10px;border:none;background:#FFF0F0;color:#FF3B30;font-weight:700;cursor:pointer;font-size:13px">Sign out</button>
-        </div>
-    </div>
-    <div class="settings-section" style="margin-top:8px">
         <div class="settings-section-title">Reorder categories</div>
         <div class="order-list" id="order-list"></div>
     </div>
@@ -438,176 +401,64 @@
 
 <div id="sheet" style="display:none"></div>
 
-
-<div class="auth-screen" id="auth-screen">
-    <div class="safe"></div>
-    <div class="auth-logo">🔗</div>
-    <div class="auth-title">Linkora Hub</div>
-    <div class="auth-sub">Save and organize your links</div>
-    <div class="auth-box">
-        <div class="auth-tabs">
-            <button class="auth-tab on" id="auth-tab-login" onclick="switchAuthTab('login')">Sign in</button>
-            <button class="auth-tab" id="auth-tab-reg" onclick="switchAuthTab('register')">Register</button>
-        </div>
-
-        <div id="auth-login">
-            <input id="login-email" class="input" type="email" placeholder="Email" autocomplete="email">
-            <input id="login-pass" class="input" type="password" placeholder="Password" autocomplete="current-password">
-            <div class="auth-err" id="login-err"></div>
-            <button class="save" onclick="doLogin()">Sign in</button>
-            <div class="auth-divider">or</div>
-            <button class="auth-google" onclick="doGoogleLogin()">
-                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                Continue with Google
-            </button>
-        </div>
-
-        <div id="auth-register" style="display:none">
-            <input id="reg-email" class="input" type="email" placeholder="Email" autocomplete="email">
-            <input id="reg-pass" class="input" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password">
-            <div class="auth-err" id="reg-err"></div>
-            <button class="save" onclick="doRegister()">Create account</button>
-            <div class="auth-divider">or</div>
-            <button class="auth-google" onclick="doGoogleLogin()">
-                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                Continue with Google
-            </button>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
+    // ── WEB SHARE TARGET — capturar params ANTES de que nada más corra ────────────
     (function() {
         const params = new URLSearchParams(window.location.search);
-        const shareUrl = params.get('share_url');
-        const shareText = params.get('share_text');
+        const shareUrl   = params.get('share_url');
+        const shareText  = params.get('share_text');
+        const shareTitle = params.get('share_title') || '';
         if (shareUrl || shareText) {
-            const shareTitle = params.get('share_title') || '';
             const urlFromText = (shareText||'').match(/https?:\/\/[^\s]+/)?.[0] || '';
             sessionStorage.setItem('pendingShare', JSON.stringify({
-                url: shareUrl || urlFromText || '',
+                url:  shareUrl || urlFromText || shareText || '',
                 note: shareTitle
             }));
-            window.history.replaceState({}, '', '/linkora/');
+            window.history.replaceState({}, '', location.pathname);
         }
     })();
-    // ── SUPABASE ──────────────────────────────────────────────────────────────────
-    const SB_URL = 'https://nskdklncdajsfpwngqqx.supabase.co';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5za2RrbG5jZGFqc2Zwd25ncXF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyMDM2MDksImV4cCI6MjA4OTc3OTYwOX0.D9VcFUED_2tGna2_FTjFvTAfeOq2h8411Vbg2F3yRl8';
-    const sb = supabase.createClient(SB_URL, SB_KEY, {
-        auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true
-        }
-    });
+
+    // ── STORAGE LOCAL ─────────────────────────────────────────────────────────────
+    const SK_DATA     = 'lk_data';
+    const SK_SETTINGS = 'lk_settings';
+
+    function loadState() {
+        try {
+            const raw = localStorage.getItem(SK_DATA);
+            if (raw) return JSON.parse(raw);
+        } catch(e) {}
+        return null;
+    }
+
+    function persistState() {
+        localStorage.setItem(SK_DATA, JSON.stringify({ cats: state.cats, links: state.links }));
+    }
+
+    function uid() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
 
     // ── CONSTANTS ─────────────────────────────────────────────────────────────────
-    const DEFAULT_CATS=[
-        {id:"music",name:"Music",emoji:"🎵",grad:"card-purple",parent:null},
-        {id:"videos",name:"Recipes",emoji:"🍳",grad:"card-orange",parent:null},
-        {id:"recipes",name:"Videos",emoji:"🎬",grad:"card-blue",parent:null},
-        {id:"sports",name:"Documents",emoji:"📚",grad:"card-pink",parent:null},
-        {id:"movies",name:"Sports",emoji:"⚽",grad:"card-pink",parent:null}
+    const DEFAULT_CATS = [
+        {id: uid(), name:'Music',     emoji:'🎵', grad:'card-purple', parent:null},
+        {id: uid(), name:'Videos',    emoji:'🎬', grad:'card-blue',   parent:null},
+        {id: uid(), name:'Recipes',   emoji:'🍳', grad:'card-orange', parent:null},
+        {id: uid(), name:'Documents', emoji:'📚', grad:'card-pink',   parent:null},
+        {id: uid(), name:'Sports',    emoji:'⚽', grad:'card-pink',   parent:null}
     ];
-    const ICONS=["🎵","🎬","🍳","⚽","💡","✈️","📚","💻","🎮","🎧","📸","⭐","🧠","🏠","🚗","🛍️","🍔","🎨","📱","🧳","🏋️","🎤","📺","📰","💰","🧪","🌍","🐶","🌟","🔥"];
+    const ICONS = ["🎵","🎬","🍳","⚽","💡","✈️","📚","💻","🎮","🎧","📸","⭐","🧠","🏠","🚗","🛍️","🍔","🎨","📱","🧳","🏋️","🎤","📺","📰","💰","🧪","🌍","🐶","🌟","🔥"];
 
     // ── STATE ─────────────────────────────────────────────────────────────────────
-    let state = { links:[], cats:[], cur:null, user:null };
+    let state = { links: [], cats: [], cur: null };
 
-    // ── AUTH ──────────────────────────────────────────────────────────────────────
-    function showAuth(tab='login'){
-        document.getElementById('auth-screen').classList.add('open');
-        switchAuthTab(tab);
-    }
-    function hideAuth(){
-        document.getElementById('auth-screen').classList.remove('open');
-    }
-    function switchAuthTab(tab){
-        document.getElementById('auth-login').style.display = tab==='login'?'block':'none';
-        document.getElementById('auth-register').style.display = tab==='register'?'block':'none';
-        document.getElementById('auth-tab-login').classList.toggle('on', tab==='login');
-        document.getElementById('auth-tab-reg').classList.toggle('on', tab==='register');
-    }
-
-    async function doLogin(){
-        const email = document.getElementById('login-email').value.trim();
-        const pass  = document.getElementById('login-pass').value;
-        const err   = document.getElementById('login-err');
-        err.textContent = '';
-        const {error} = await sb.auth.signInWithPassword({email, password:pass});
-        if(error) err.textContent = error.message;
-    }
-
-    async function doRegister(){
-        const email = document.getElementById('reg-email').value.trim();
-        const pass  = document.getElementById('reg-pass').value;
-        const err   = document.getElementById('reg-err');
-        err.textContent = '';
-        const {error} = await sb.auth.signUp({email, password:pass});
-        if(error) err.textContent = error.message;
-        else err.style.color='#25D366', err.textContent = 'Check your email to confirm!';
-    }
-
-    async function doGoogleLogin(){
-        await sb.auth.signInWithOAuth({
-            provider:'google',
-            options:{ redirectTo: 'https://sirtaymarthin.github.io/linkora/' }
-        });
-    }
-
-    async function doLogout(){
-        document.getElementById('settings-panel').classList.remove('open');
-        document.getElementById('detail-screen').classList.remove('open');
-        document.getElementById('sheet').style.display='none';
-        loadingData = false;
-        lastUserId = null;
-        try { await sb.auth.signOut(); } catch(e) {}
-    }
-
-
-    // ── DATA ──────────────────────────────────────────────────────────────────────
-    async function loadData(){
-        const [catsRes, linksRes] = await Promise.all([
-            sb.from('categories').select('*').order('position'),
-            sb.from('links').select('*').order('created_at', {ascending:false})
-        ]);
-        state.cats  = (catsRes.data||[]).map(c=>({
-            id: c.id, name: c.name, emoji: c.emoji,
-            grad: c.grad||'card-purple', parent: c.parent_id||null
-        }));
-        state.links = (linksRes.data||[]).map(l=>({
-            id: l.id, url: l.url, note: l.note||'',
-            cat: l.category_id, date: new Date(l.created_at).getTime()
-        }));
-        // Insert default categories for new users (only once)
-        if(state.cats.length === 0 && state.user){
-            const {data: existing} = await sb.from('categories')
-                .select('id').eq('user_id', state.user.id).limit(1);
-            if(!existing || existing.length === 0){
-                const defaults = [
-                    {name:'Music',     emoji:'🎵', grad:'card-purple', position:0},
-                    {name:'Videos',    emoji:'🎬', grad:'card-blue',   position:1},
-                    {name:'Recipes',   emoji:'🍳', grad:'card-orange', position:2},
-                    {name:'Documents', emoji:'📚', grad:'card-pink',   position:3},
-                    {name:'Sports',    emoji:'⚽', grad:'card-pink',   position:4}
-                ];
-                const {data} = await sb.from('categories').insert(
-                    defaults.map(d=>({...d, user_id:state.user.id, parent_id:null}))
-                ).select();
-                if(data) state.cats = data.map(c=>({
-                    id:c.id, name:c.name, emoji:c.emoji,
-                    grad:c.grad||'card-purple', parent:null
-                }));
-            }
-        }
-        render();
-    }
-
-    async function saveState(){
-        // no-op: saves happen individually per action
+    // Cargar datos persistidos o inicializar con defaults
+    const saved = loadState();
+    if (saved && (saved.cats.length > 0 || saved.links.length > 0)) {
+        state.cats  = saved.cats  || [];
+        state.links = saved.links || [];
+    } else {
+        state.cats = DEFAULT_CATS;
+        persistState();
     }
 
     // ── UTILS ─────────────────────────────────────────────────────────────────────
@@ -625,13 +476,10 @@
     }
 
     // ── SETTINGS ──────────────────────────────────────────────────────────────────
-    const SK_SETTINGS='lv_settings';
-    let settings=JSON.parse(localStorage.getItem(SK_SETTINGS))||{largeIcons:true};
-    function saveSettings(){ localStorage.setItem(SK_SETTINGS,JSON.stringify(settings)); }
+    let settings = JSON.parse(localStorage.getItem(SK_SETTINGS)) || {largeIcons: true};
+    function saveSettings(){ localStorage.setItem(SK_SETTINGS, JSON.stringify(settings)); }
     function toggleLargeIcons(){ settings.largeIcons=!settings.largeIcons; saveSettings(); applySettings(); }
     function applySettings(){
-        // largeIcons=true → toggle ON, icons large (default)
-        // largeIcons=false → toggle OFF, icons small
         if(settings.largeIcons){
             document.body.classList.remove('small-icons');
             document.getElementById('toggle-large').classList.add('on');
@@ -644,8 +492,6 @@
         document.getElementById('settings-panel').classList.add('open');
         applySettings();
         renderOrderList();
-        const emailEl = document.getElementById('settings-user-email');
-        if(emailEl && state.user) emailEl.textContent = state.user.email;
     }
     function closeSettings(){ document.getElementById('settings-panel').classList.remove('open'); render(); }
 
@@ -667,17 +513,14 @@
     function dragStart(e,el){ dragSrc=el; el.classList.add('dragging'); }
     function dragOver(e,el){ e.preventDefault(); document.querySelectorAll('.order-item').forEach(i=>i.classList.remove('dragover')); el.classList.add('dragover'); }
     function dragEnd(){ document.querySelectorAll('.order-item').forEach(i=>{i.classList.remove('dragging');i.classList.remove('dragover');}); }
-    async function dragDrop(e,el){
+    function dragDrop(e,el){
         e.preventDefault();
         if(!dragSrc||dragSrc===el) return;
         const fromIdx=state.cats.findIndex(c=>c.id===dragSrc.dataset.id);
         const toIdx=state.cats.findIndex(c=>c.id===el.dataset.id);
         const [moved]=state.cats.splice(fromIdx,1);
         state.cats.splice(toIdx,0,moved);
-        // update positions in DB
-        await Promise.all(state.cats.filter(c=>!c.parent).map((c,i)=>
-            sb.from('categories').update({position:i}).eq('id',c.id)
-        ));
+        persistState();
         renderOrderList();
     }
     let touchItem=null,touchStartY=0;
@@ -725,7 +568,6 @@
         }
     }
     function swipeEnd(e,el){
-        // Si el touch terminó sobre el botón delete, no cerramos el swipe
         const touch = e.changedTouches[0];
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
         if(target && (target.classList.contains('cat-list-del') || target.classList.contains('link-row-del-bg') ||
@@ -847,10 +689,8 @@
         state.cur=id;
         const cat=state.cats.find(c=>c.id===id);
         if(cat){
-            const isDefault=DEFAULT_CATS.some(d=>d.id===cat.id);
-            const emojiSize=isDefault?'22px':'16px';
             document.getElementById('detail-nav-title').innerHTML=
-                '<span style="font-size:'+emojiSize+';margin-right:6px;vertical-align:middle">'+(cat.emoji||'📁')+'</span>'+
+                '<span style="font-size:22px;margin-right:6px;vertical-align:middle">'+(cat.emoji||'📁')+'</span>'+
                 '<span style="vertical-align:middle">'+cat.name+'</span>';
         }
         document.getElementById('detail-content').innerHTML=renderExplorerList(id,false);
@@ -862,7 +702,7 @@
     function openCat(id){ selectCat(id); }
 
     // ── ADD LINK ──────────────────────────────────────────────────────────────────
-    function openAdd(){
+    function openAdd(prefillUrl, prefillNote){
         const sheet=document.getElementById('sheet');
         sheet.style.display='block';
         const inCat = state.cur !== null;
@@ -873,15 +713,15 @@
             : `<select id="cat-sel" class="select">${opts}</select>`;
         sheet.innerHTML=`<div class="sheet-bg" onclick="closeSheet()"><div class="sheet" onclick="event.stopPropagation()">
             <div class="recent-title" style="margin-bottom:20px;text-align:center">Add New Link</div>
-            <input id="url" class="input" type="url" inputmode="url" placeholder="Paste link here (https://...)">
-            <input id="note" class="input" placeholder="Note or description (optional)">
+            <input id="url" class="input" type="url" inputmode="url" placeholder="Paste link here (https://...)" value="${prefillUrl||''}">
+            <input id="note" class="input" placeholder="Note or description (optional)" value="${prefillNote||''}">
             ${catField}
             <button class="save" onclick="addLink()">Save to Vault</button>
         </div></div>`;
-        document.getElementById('url').focus();
+        setTimeout(()=>{ const el=document.getElementById(prefillUrl?'note':'url'); if(el) el.focus(); }, 50);
     }
 
-    async function addLink(){
+    function addLink(){
         let url=document.getElementById('url').value.trim();
         if(!url) return;
         if(!/^https?:\/\//i.test(url)) url='https://'+url;
@@ -889,11 +729,9 @@
         const catId = state.cur !== null ? state.cur : (catSelEl ? catSelEl.value : null);
         if(!catId){ alert('Please select a category'); return; }
         const note=document.getElementById('note').value.trim();
-        const {data,error}=await sb.from('links').insert({
-            user_id:state.user.id, url, note, category_id:catId
-        }).select().single();
-        if(error){ alert('Error saving: '+error.message); return; }
-        state.links.unshift({id:data.id,url:data.url,note:data.note||'',cat:data.category_id,date:new Date(data.created_at).getTime()});
+        const newLink = { id: uid(), url, note, cat: catId, date: Date.now() };
+        state.links.unshift(newLink);
+        persistState();
         closeSheet();
         render();
         const screen=document.getElementById('detail-screen');
@@ -917,45 +755,35 @@
     }
     function pickIcon(el,icon){ document.querySelectorAll('.icon-item').forEach(i=>i.classList.remove('sel')); el.classList.add('sel'); pickedIcon=icon; }
 
-    async function addCategory(){
+    function addCategory(){
         const name=document.getElementById('newcat-name').value.trim();
         if(!name) return;
         const parentId=state.cur;
-        const {data,error}=await sb.from('categories').insert({
-            user_id:state.user.id, name, emoji:pickedIcon||'📁',
-            grad:pickedGradient, parent_id:parentId||null, position:state.cats.length
-        }).select().single();
-        if(error){ alert('Error: '+error.message); return; }
-        state.cats.push({id:data.id,name:data.name,emoji:data.emoji,grad:data.grad,parent:data.parent_id||null});
+        const newCat = { id: uid(), name, emoji: pickedIcon||'📁', grad: pickedGradient, parent: parentId||null };
+        state.cats.push(newCat);
+        persistState();
         closeSheet();
         render();
         const screen=document.getElementById('detail-screen');
-        // Stay in parent context so everything keeps working
         if(screen.classList.contains('open') && parentId){
             state.cur = parentId;
             navigateDetail(parentId);
         } else if(!parentId){
-            // Root category created from home - stay on home
             state.cur = null;
         }
     }
 
     // ── DELETE ────────────────────────────────────────────────────────────────────
-    async function deleteCatAndRefresh(id){
+    function deleteCatAndRefresh(id){
         const cat = state.cats.find(c=>c.id===id);
         if(!cat) return;
         if(!confirm(`Delete folder "${cat.name}" and all its content?`)) return;
-
         const parentId = cat.parent;
         const allIds = getAllCatIds(id);
-        for(const cid of allIds){
-            await sb.from('links').delete().eq('category_id',cid);
-            await sb.from('categories').delete().eq('id',cid);
-        }
-        state.cats=state.cats.filter(c=>!allIds.includes(c.id));
-        state.links=state.links.filter(l=>!allIds.includes(l.cat));
+        state.cats  = state.cats.filter(c=>!allIds.includes(c.id));
+        state.links = state.links.filter(l=>!allIds.includes(l.cat));
+        persistState();
         render();
-        // After deleting subcategory, stay in parent
         if(parentId && state.cats.find(c=>c.id===parentId)){
             state.cur = parentId;
             navigateDetail(parentId);
@@ -964,20 +792,15 @@
         }
     }
 
-    async function deleteCatSwipe(id){
+    function deleteCatSwipe(id){
         const cat = state.cats.find(c=>c.id===id);
         if(!cat) return;
         if(!confirm(`Delete folder "${cat.name}" and all its content?`)) return;
-
         const parentId = cat.parent;
-        // Delete all subcategories recursively
         const allIds = getAllCatIds(id);
-        for(const cid of allIds){
-            await sb.from('links').delete().eq('category_id',cid);
-            await sb.from('categories').delete().eq('id',cid);
-        }
-        state.cats=state.cats.filter(c=>!allIds.includes(c.id));
-        state.links=state.links.filter(l=>!allIds.includes(l.cat));
+        state.cats  = state.cats.filter(c=>!allIds.includes(c.id));
+        state.links = state.links.filter(l=>!allIds.includes(l.cat));
+        persistState();
         render();
         const screen=document.getElementById('detail-screen');
         if(screen.classList.contains('open')){
@@ -985,19 +808,15 @@
                 state.cur = parentId;
                 navigateDetail(parentId);
             } else if(allIds.includes(state.cur)){
-                // We deleted the current cat, go home
                 closeDetail();
             }
         }
     }
 
-    async function removeLinkAndRefresh(id){
-        const link = state.links.find(l=>l.id===id);
-        if(!link) return;
+    function removeLinkAndRefresh(id){
         if(!confirm("Remove this link?")) return;
-
-        await sb.from('links').delete().eq('id',id);
-        state.links=state.links.filter(l=>l.id!==id);
+        state.links = state.links.filter(l=>l.id!==id);
+        persistState();
         render();
         const screen=document.getElementById('detail-screen');
         if(screen.classList.contains('open')&&state.cur!==null) navigateDetail(state.cur);
@@ -1009,77 +828,20 @@
 
     function closeSheet(){ document.getElementById('sheet').style.display='none'; }
 
-    // ── INIT ──────────────────────────────────────────────────────────────────────
-    let loadingData = false;
-    let lastUserId = null;
-
-    sb.auth.onAuthStateChange(async (event, session) => {
-        if(session?.user){
-            const uid = session.user.id;
-            // Avoid duplicate loads for same user
-            if(loadingData) return;
-            if(uid === lastUserId && state.cats.length > 0){
-                hideAuth();
-                if (pendingShareUrl) {
-                    const url = pendingShareUrl, note = pendingShareNote;
-                    pendingShareUrl = pendingShareNote = null;
-                    openAdd();
-                    setTimeout(() => {
-                        const el = document.getElementById('url');
-                        const nl = document.getElementById('note');
-                        if (el) el.value = url;
-                        if (nl) nl.value = note;
-                    }, 100);
-                }
-                return;
-            }
-            loadingData = true;
-            lastUserId = uid;
-            state.user = session.user;
-            state.cats = [];
-            state.links = [];
-            state.cur = null;
-            hideAuth();
-            await loadData();
-            // Procesar share pendiente
-            if (pendingShareUrl) {
-                const url  = pendingShareUrl;
-                const note = pendingShareNote;
-                pendingShareUrl  = null;
-                pendingShareNote = null;
-                openAdd();
-                setTimeout(() => {
-                    const urlInput  = document.getElementById('url');
-                    const noteInput = document.getElementById('note');
-                    if (urlInput)  urlInput.value  = url;
-                    if (noteInput) noteInput.value = note;
-                }, 100);
-            }
-            loadingData = false;
-        } else {
-            loadingData = false;
-            lastUserId = null;
-            state.user = null;
-            state.links = [];
-            state.cats = [];
-            state.cur = null;
-            render();
-            showAuth();
-        }
-    });
-
-    // ── WEB SHARE TARGET ──────────────────────────────────────────────────────────
-    let pendingShareUrl = null;
-    let pendingShareNote = null;
-
+    // ── WEB SHARE TARGET — procesar share pendiente ───────────────────────────────
     const _pending = sessionStorage.getItem('pendingShare');
     if (_pending) {
         sessionStorage.removeItem('pendingShare');
-        const _p = JSON.parse(_pending);
-        pendingShareUrl  = _p.url  || null;
-        pendingShareNote = _p.note || null;
+        try {
+            const _p = JSON.parse(_pending);
+            const _url  = _p.url  || '';
+            const _note = _p.note || '';
+            // Abrir add sheet en cuanto el DOM esté listo
+            setTimeout(() => openAdd(_url, _note), 0);
+        } catch(e) {}
     }
 
+    // ── INIT ──────────────────────────────────────────────────────────────────────
     applySettings();
     render();
 </script>
