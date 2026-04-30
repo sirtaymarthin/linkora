@@ -402,7 +402,7 @@
 <div id="sheet" style="display:none"></div>
 
 <script>
-    // ── WEB SHARE TARGET — capturar params ANTES de que nada más corra ────────────
+    // ── WEB SHARE TARGET — capturar params GET (fallback) ────────────────────────
     (function() {
         const params = new URLSearchParams(window.location.search);
         const shareUrl   = params.get('share_url');
@@ -411,6 +411,7 @@
         if (shareUrl || shareText) {
             const urlFromText = (shareText||'').match(/https?:\/\/[^\s]+/)?.[0] || '';
             sessionStorage.setItem('pendingShare', JSON.stringify({
+                type: 'url',
                 url:  shareUrl || urlFromText || shareText || '',
                 note: shareTitle
             }));
@@ -645,24 +646,42 @@
             </div>`;
         });
         links.forEach(l=>{
-            const t=getThumb(l.url);
             const cat=state.cats.find(c=>c.id===l.cat);
+            let thumbHtml, titleHtml, actionHtml;
+
+            if (l.isFile) {
+                const isImg = l.fileType && l.fileType.startsWith("image/");
+                const icon  = fileIcon(l.fileType || "");
+                thumbHtml = isImg
+                    ? `<div class="link-thumb" style="border-radius:8px;overflow:hidden;flex-shrink:0;background:#EDE8FF;cursor:pointer;" onclick="openFile('${l.id}')">
+                           <img src="${l.url}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                       </div>`
+                    : `<div class="link-thumb" style="display:flex;align-items:center;justify-content:center;font-size:22px;background:#EDE8FF;border-radius:8px;flex-shrink:0;cursor:pointer;" onclick="openFile('${l.id}')">${icon}</div>`;
+                const displayName = l.fileName || l.note || "file";
+                titleHtml = `<div class="link-row-url" style="cursor:pointer;" onclick="openFile('${l.id}')">${displayName}</div>
+                             ${l.note && l.note !== l.fileName ?`<div class="link-row-note">${l.note}</div>`:""}
+                             <div class="link-row-meta">${ago(l.date)}${showCat&&cat?" · "+cat.emoji+" "+cat.name:""}</div>`;
+                actionHtml = "";
+            } else {
+                const t = getThumb(l.url);
+                thumbHtml = `<div class="link-thumb" style="display:flex;align-items:center;justify-content:center;font-size:22px;background:#EDE8FF;border-radius:8px;flex-shrink:0;" id="lt-${l.id}">
+                                 <img src="${t}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:none;"
+                                     onload="this.style.display='block';this.parentElement.querySelector('.thumb-fallback').style.display='none';"
+                                     onerror="this.style.display='none';">
+                                 <span class="thumb-fallback">🔗</span>
+                             </div>`;
+                titleHtml = `<a class="link-row-url" href="${l.url}" target="_blank">${domain(l.url)}</a>
+                             ${l.note?`<div class="link-row-note">${l.note}</div>`:''}
+                             <div class="link-row-meta">${ago(l.date)}${showCat&&cat?' · '+cat.emoji+' '+cat.name:''}</div>`;
+                actionHtml = `<button class="lbtn lbtn-wa" onclick="event.stopPropagation();shareLink('${l.url}')">${WA_SVG}</button>`;
+            }
+
             h+=`<div class="link-row" ontouchstart="swipeStart(event,this)" ontouchmove="swipeMove(event,this)" ontouchend="swipeEnd(event,this)">
                 <div class="link-row-del-bg" onclick="event.stopPropagation();removeLinkAndRefresh('${l.id}')">Delete</div>
                 <div class="link-row-inner">
-                    <div class="link-thumb" style="display:flex;align-items:center;justify-content:center;font-size:22px;background:#EDE8FF;border-radius:8px;" id="lt-${l.id}">
-                        <img src="${t}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"
-                            onload="this.parentElement.style.background='transparent'"
-                            onerror="this.style.display='none'">🔗
-                    </div>
-                    <div class="link-row-info">
-                        <a class="link-row-url" href="${l.url}" target="_blank">${domain(l.url)}</a>
-                        ${l.note?`<div class="link-row-note">${l.note}</div>`:''}
-                        <div class="link-row-meta">${ago(l.date)}${showCat&&cat?' · '+cat.emoji+' '+cat.name:''}</div>
-                    </div>
-                    <div class="link-row-actions">
-                        <button class="lbtn lbtn-wa" onclick="event.stopPropagation();shareLink('${l.url}')">${WA_SVG}</button>
-                    </div>
+                    ${thumbHtml}
+                    <div class="link-row-info">${titleHtml}</div>
+                    <div class="link-row-actions">${actionHtml}</div>
                 </div>
             </div>`;
         });
@@ -671,6 +690,24 @@
     }
 
     function shareLink(url){ if(navigator.share) navigator.share({url}).catch(()=>{}); else navigator.clipboard&&navigator.clipboard.writeText(url); }
+    function openFile(id){
+        const l = state.links.find(x=>x.id===id);
+        if(!l) return;
+        const w = window.open();
+        if(w) {
+            w.document.write('<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + (l.fileName||'file') + '</title></head><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;">');
+            if(l.fileType && l.fileType.startsWith('image/')) {
+                w.document.write('<img src="' + l.url + '" style="max-width:100%;max-height:100vh;object-fit:contain;">');
+            } else if(l.fileType === 'application/pdf') {
+                w.document.write('<embed src="' + l.url + '" type="application/pdf" width="100%" height="100%" style="position:fixed;inset:0;">');
+            } else {
+                // Para otros tipos: intentar embed, si no, ofrecer descarga
+                w.document.write('<div style="color:#fff;font-family:sans-serif;text-align:center;padding:40px"><p style="font-size:48px">' + fileIcon(l.fileType||'') + '</p><p style="font-size:18px;margin:16px 0">' + (l.fileName||'file') + '</p><a href="' + l.url + '" download="' + (l.fileName||'file') + '" style="background:#7B61FF;color:#fff;padding:12px 24px;border-radius:12px;text-decoration:none;font-weight:700">Download</a></div>');
+            }
+            w.document.write('</body></html>');
+            w.document.close();
+        }
+    }
 
     function selectCat(id){
         state.cur=id;
@@ -828,17 +865,115 @@
 
     function closeSheet(){ document.getElementById('sheet').style.display='none'; }
 
+    // ── ADD FILE ──────────────────────────────────────────────────────────────────
+    function openAddFile(fileName, fileType, fileSize, fileData, prefillNote) {
+        const sheet = document.getElementById('sheet');
+        sheet.style.display = 'block';
+        const inCat = state.cur !== null;
+        const catName = inCat ? (state.cats.find(c=>c.id===state.cur)||{name:'',emoji:''}) : null;
+        const opts = inCat ? '' : state.cats.map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+        const catField = inCat
+            ? `<div style="padding:14px 16px;background:#EDE8FF;border-radius:14px;margin-bottom:12px;font-size:15px;font-weight:600;color:#7B61FF">${catName.emoji} ${catName.name}</div>`
+            : `<select id="cat-sel" class="select">${opts}</select>`;
+
+        const isImage = fileType.startsWith('image/');
+        const sizeKB  = Math.round(fileSize / 1024);
+        const preview = isImage
+            ? `<img src="data:${fileType};base64,${fileData}" style="width:100%;max-height:160px;object-fit:contain;border-radius:12px;margin-bottom:12px;">`
+            : `<div style="padding:14px 16px;background:#F2F2F7;border-radius:14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+                <span style="font-size:28px">${fileIcon(fileType)}</span>
+                <div><div style="font-size:14px;font-weight:600;color:#1C1C1E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px">${fileName}</div>
+                <div style="font-size:12px;color:#8E8E93">${sizeKB} KB · ${fileType||'file'}</div></div>
+               </div>`;
+
+        sheet.innerHTML = `<div class="sheet-bg" onclick="closeSheet()"><div class="sheet" onclick="event.stopPropagation()">
+            <div class="recent-title" style="margin-bottom:16px;text-align:center">Save File</div>
+            ${preview}
+            <input id="file-note" class="input" placeholder="Note or description (optional)" value="${prefillNote||''}">
+            ${catField}
+            <button class="save" onclick="addFileEntry('${encodeURIComponent(fileName)}','${fileType}',${fileSize},'${fileData}')">Save to Vault</button>
+        </div></div>`;
+        setTimeout(()=>{ const el=document.getElementById('file-note'); if(el) el.focus(); }, 50);
+    }
+
+    function fileIcon(type) {
+        if (type.startsWith('image/'))       return '🖼️';
+        if (type.startsWith('video/'))       return '🎬';
+        if (type.startsWith('audio/'))       return '🎵';
+        if (type === 'application/pdf')      return '📄';
+        if (type.includes('word'))           return '📝';
+        if (type.includes('spreadsheet') || type.includes('excel')) return '📊';
+        if (type.includes('presentation'))   return '📊';
+        if (type.includes('zip') || type.includes('rar')) return '🗜️';
+        return '📎';
+    }
+
+    function addFileEntry(encodedName, fileType, fileSize, fileData) {
+        const fileName = decodeURIComponent(encodedName);
+        const catSelEl = document.getElementById('cat-sel');
+        const catId    = state.cur !== null ? state.cur : (catSelEl ? catSelEl.value : null);
+        if (!catId) { alert('Please select a category'); return; }
+        const note = document.getElementById('file-note').value.trim();
+        const newLink = {
+            id:       uid(),
+            url:      `data:${fileType};base64,${fileData}`,
+            note:     note || fileName,
+            cat:      catId,
+            date:     Date.now(),
+            isFile:   true,
+            fileName: fileName,
+            fileType: fileType,
+            fileSize: fileSize
+        };
+        state.links.unshift(newLink);
+        persistState();
+        closeSheet();
+        render();
+        const screen = document.getElementById('detail-screen');
+        if (screen.classList.contains('open')) navigateDetail(state.cur || catId);
+    }
+
+    function processPendingShare(p) {
+        if (!p) return;
+        if (p.type === 'file' && p.fileData) {
+            setTimeout(() => openAddFile(p.fileName, p.fileType, p.fileSize, p.fileData, p.note), 50);
+        } else {
+            const url  = p.url  || '';
+            const note = p.note || '';
+            setTimeout(() => openAdd(url, note), 50);
+        }
+    }
+
     // ── WEB SHARE TARGET — procesar share pendiente ───────────────────────────────
+    // 1. Mensaje del SW (share POST interceptado mientras la app estaba abierta)
+    navigator.serviceWorker && navigator.serviceWorker.addEventListener('message', e => {
+        if (e.data && e.data.type === 'SHARE_TARGET') {
+            processPendingShare(e.data.payload);
+        }
+    });
+
+    // 2. Cache del SW (share POST cuando la app estaba cerrada)
+    async function checkCachedShare() {
+        if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
+        try {
+            const cache = await caches.open('lv-v101');
+            const resp  = await cache.match('/__pending_share__');
+            if (resp) {
+                await cache.delete('/__pending_share__');
+                const p = await resp.json();
+                processPendingShare(p);
+            }
+        } catch(e) {}
+    }
+
+    // 3. sessionStorage (share GET — links compartidos)
     const _pending = sessionStorage.getItem('pendingShare');
     if (_pending) {
         sessionStorage.removeItem('pendingShare');
-        try {
-            const _p = JSON.parse(_pending);
-            const _url  = _p.url  || '';
-            const _note = _p.note || '';
-            // Abrir add sheet en cuanto el DOM esté listo
-            setTimeout(() => openAdd(_url, _note), 0);
-        } catch(e) {}
+        try { processPendingShare(JSON.parse(_pending)); } catch(e) {}
+    } else {
+        // Solo buscar en cache si no había share GET
+        setTimeout(checkCachedShare, 300);
     }
 
     // ── INIT ──────────────────────────────────────────────────────────────────────
