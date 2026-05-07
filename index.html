@@ -480,7 +480,7 @@
         const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/);
         if(yt) return "https://img.youtube.com/vi/"+yt[1]+"/hqdefault.jpg";
         // Microlink para el resto (Instagram, Twitter, webs generales...)
-        return "https://api.microlink.io/?url="+encodeURIComponent(url)+"&meta=false&screenshot=true&embed=screenshot.url";
+        return "https://api.microlink.io/?url="+encodeURIComponent(url)+"&meta=true&embed=image.url";
     }
 
     // ── SETTINGS ──────────────────────────────────────────────────────────────────
