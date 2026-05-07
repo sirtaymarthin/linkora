@@ -236,16 +236,16 @@
 
         /* LINK LIST */
         .link-list { display: flex; flex-direction: column; gap: 0; padding: 0 16px 20px; }
-        .link-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #F0F0F5; }
+        .link-row { position:relative; overflow:hidden; border-bottom: 1px solid #F0F0F5; }
         .link-row:last-child { border-bottom: none; }
-        .link-row-inner { display:flex;align-items:center;gap:12px;padding:10px 0;width:100%;transition:transform 0.25s ease; }
-        .link-thumb { width: 56px; height: 40px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #F2F2F7; display: flex; align-items: center; justify-content: center; }
+        .link-row-inner { display:flex;align-items:center;gap:14px;padding:12px 0;width:100%;transition:transform 0.25s ease; }
+        .link-thumb { width: 80px; height: 80px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: #F2F2F7; display: flex; align-items: center; justify-content: center; }
         .link-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .link-row-info { flex: 1; min-width: 0; }
-        .link-row-url { font-size: 13px; font-weight: 600; color: #1C1C1E; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; display: block; }
-        .link-row-note { font-size: 11px; color: #8E8E93; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
-        .link-row-meta { font-size: 10px; color: #C7C7CC; margin-top: 2px; }
-        .link-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .link-row-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+        .link-row-url { font-size: 14px; font-weight: 700; color: #1C1C1E; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; display: block; }
+        .link-row-note { font-size: 12px; color: #636366; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.4; }
+        .link-row-meta { font-size: 11px; color: #C7C7CC; margin-top: 2px; }
+        .link-row-actions { display: flex; gap: 6px; flex-shrink: 0; align-self: flex-start; padding-top: 2px; }
         .lbtn { width: 30px; height: 30px; border-radius: 8px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; -webkit-tap-highlight-color: transparent; text-decoration: none; }
         .lbtn:active { opacity: 0.6; }
         .lbtn-wa { background: #EDE8FF; }
@@ -303,7 +303,7 @@
         body.small-icons .cat-list-name { font-size:14px; }
         body.small-icons .cat-list-count { font-size:12px; }
         body.small-icons .link-row-inner { padding:10px 0; }
-        body.small-icons .link-thumb { width:56px;height:40px; }
+        body.small-icons .link-thumb { width:64px;height:64px; }
         body.small-icons .link-row-url { font-size:13px; }
         body.small-icons .link-row-note { font-size:11px; }
         body.small-icons .link-row-meta { font-size:10px; }
@@ -470,10 +470,17 @@
         let h=Math.floor(m/60);
         return h<24?h+"h":Math.floor(h/24)+"d";
     }
+    // Cache de thumbnails resueltos: linkId -> {src, fav}
+    function setDetailContent(html) {
+        document.getElementById('detail-content').innerHTML = html;
+    }
+
     function getThumb(url){
-        let yt=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+        // YouTube normal y Shorts
+        const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/);
         if(yt) return "https://img.youtube.com/vi/"+yt[1]+"/hqdefault.jpg";
-        return "https://api.microlink.io/?url="+encodeURIComponent(url)+"&meta=true&embed=image.url";
+        // Microlink para el resto (Instagram, Twitter, webs generales...)
+        return "https://api.microlink.io/?url="+encodeURIComponent(url)+"&meta=false&screenshot=true&embed=screenshot.url";
     }
 
     // ── SETTINGS ──────────────────────────────────────────────────────────────────
@@ -588,7 +595,7 @@
         if(!q){ document.getElementById('detail-screen').classList.remove('open'); return; }
         const results=state.links.filter(l=>l.url.toLowerCase().includes(q)||(l.note&&l.note.toLowerCase().includes(q)));
         document.getElementById('detail-nav-title').innerHTML='<span style="font-size:22px;margin-right:6px;vertical-align:middle">🔍</span><span style="vertical-align:middle">'+results.length+' result'+(results.length!==1?'s':'')+'</span>';
-        document.getElementById('detail-content').innerHTML=results.length?renderExplorerList(null,true,results):'<div class="links-empty">No results for &quot;'+q+'&quot;</div>';
+        setDetailContent(results.length?renderExplorerList(null,true,results):'<div class="links-empty">No results for &quot;'+q+'&quot;</div>');
         document.getElementById('detail-screen').classList.add('open');
     }
 
@@ -663,12 +670,11 @@
                              <div class="link-row-meta">${ago(l.date)}${showCat&&cat?" · "+cat.emoji+" "+cat.name:""}</div>`;
                 actionHtml = "";
             } else {
-                const t = getThumb(l.url);
                 thumbHtml = `<div class="link-thumb" style="display:flex;align-items:center;justify-content:center;font-size:22px;background:#EDE8FF;border-radius:8px;flex-shrink:0;" id="lt-${l.id}">
-                                 <img src="${t}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:none;"
-                                     onload="this.style.display='block';this.parentElement.querySelector('.thumb-fallback').style.display='none';"
+                                 <img src="${getThumb(l.url)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"
+                                     onload="this.parentElement.style.background='transparent';this.nextElementSibling.style.display='none';"
                                      onerror="this.style.display='none';">
-                                 <span class="thumb-fallback">🔗</span>
+                                 <span>🔗</span>
                              </div>`;
                 titleHtml = `<a class="link-row-url" href="${l.url}" target="_blank">${domain(l.url)}</a>
                              ${l.note?`<div class="link-row-note">${l.note}</div>`:''}
@@ -714,7 +720,7 @@
         if(id===null){
             const recentLinks=state.links.slice(0,10);
             document.getElementById('detail-nav-title').innerHTML='<span style="font-size:22px;margin-right:6px;vertical-align:middle">🕐</span><span style="vertical-align:middle">Recent</span>';
-            document.getElementById('detail-content').innerHTML=recentLinks.length?renderExplorerList(null,true,recentLinks):'<div class="links-empty">No links yet.</div>';
+            setDetailContent(recentLinks.length?renderExplorerList(null,true,recentLinks):'<div class="links-empty">No links yet.</div>');
             document.getElementById('detail-screen').classList.add('open');
         } else {
             document.getElementById('detail-screen').classList.add('open');
@@ -730,7 +736,7 @@
                 '<span style="font-size:22px;margin-right:6px;vertical-align:middle">'+(cat.emoji||'📁')+'</span>'+
                 '<span style="vertical-align:middle">'+cat.name+'</span>';
         }
-        document.getElementById('detail-content').innerHTML=renderExplorerList(id,false);
+        setDetailContent(renderExplorerList(id,false));
         document.getElementById('detail-content').scrollTop=0;
     }
 
@@ -859,7 +865,7 @@
         if(screen.classList.contains('open')&&state.cur!==null) navigateDetail(state.cur);
         else if(screen.classList.contains('open')){
             const recentLinks=state.links.slice(0,10);
-            document.getElementById('detail-content').innerHTML=recentLinks.length?renderExplorerList(null,true,recentLinks):'<div class="links-empty">No links yet.</div>';
+            setDetailContent(recentLinks.length?renderExplorerList(null,true,recentLinks):'<div class="links-empty">No links yet.</div>');
         }
     }
 
